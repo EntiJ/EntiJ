@@ -4,9 +4,9 @@ package gr.entij;
  * Judges moves supplied to an entity for their validity and, if they are
  * valid, decides the next position of the entity. <p>
  * A {@code Logic} object is assigned to an entity via {@link Entity#setLogic(Logic)}
- * and used by that entity every time {@link Entity#move(int)} is called. <p>
+ * and used by that entity every time {@link Entity#move} is called. <p>
  * The same {@code Logic} object can be assigned to multiple entities.
- * @see Entity#move(int)
+ * @see Entity#move
  * @see Entity#setLogic(Logic)
  */
 public interface Logic {

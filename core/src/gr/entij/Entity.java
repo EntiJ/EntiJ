@@ -16,7 +16,7 @@ import static gr.entij.event.EntityEvent.Type;
  * Entities, also, provide the ability to monitor changes to any of the above properties
  * (except for the name which does not change) by adding appropriate listeners. <p>
  * Finally, an entity can have its own {@linkplain Logic logic} that defines its
- * behavior upon accepting different inputs (see {@link #move(int)}).
+ * behavior upon accepting different inputs (see {@link Entity#move(long)}).
  */
 public class Entity {
     // TODO take care of possible concurrency issues
