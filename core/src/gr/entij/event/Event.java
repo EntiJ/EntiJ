@@ -18,6 +18,6 @@ public class Event {
 
     @Override
     public String toString() {
-        return super.toString()+" source: "+source;
+        return super.toString()+" source: ["+source+"]";
     }
 }
