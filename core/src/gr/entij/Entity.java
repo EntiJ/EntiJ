@@ -4,6 +4,7 @@ import gr.entij.event.*;
 import java.util.*;
 import java.util.function.Consumer;
 import static gr.entij.event.EntityEvent.Type;
+import java.util.function.Predicate;
 
 /**
  * Each entity has the following properties:
@@ -22,15 +23,30 @@ public class Entity {
     // TODO take care of possible concurrency issues
     // Proposal: implement async messaging system
     
+    static class RemovableListener<T> implements Predicate<T> {
+        final Consumer<T> action;
+
+        public RemovableListener(Consumer<T> action) {
+            this.action = action;
+        }
+        
+        @Override
+        public boolean test(T t) {
+            action.accept(t);
+            return true;
+        }
+        
+    }
+    
     private final String name;
     private long posit;
     private long state;
     
     private Logic logic;
-    private final List<Consumer<? super MoveEvent>> moveListeners = new LinkedList<>(); 
-    private final List<Consumer<? super StateEvent>> stateListeners = new LinkedList<>();
-    private final List<Consumer<? super PropertyEvent>> propertyListeners = new LinkedList<>();
-    private final List<Consumer<? super EntityEvent>> entityListeners = new LinkedList<>();
+    private final List<Predicate<? super MoveEvent>> moveListeners = new LinkedList<>(); 
+    private final List<Predicate<? super StateEvent>> stateListeners = new LinkedList<>();
+    private final List<Predicate<? super PropertyEvent>> propertyListeners = new LinkedList<>();
+    private final List<Predicate<? super EntityEvent>> entityListeners = new LinkedList<>();
     
     protected List<Entity> children = new ArrayList<>(0);
     private Map<String, Object> properties  = new HashMap<>();
@@ -72,10 +88,7 @@ public class Entity {
      */
     public void destroy() {
         EntityEvent destroyEvent = new EntityEvent(this, EntityEvent.Type.DESTROYED);
-        new ArrayList<>(entityListeners).forEach(l -> l.accept(destroyEvent));
-        // iterating on a copy instead of the actual list allows
-        // the actual list to be modified while iterating
-        // ??? maybe this takes unnecesary memory...
+        fireEvent(entityListeners, destroyEvent);
     }
     
     /**
@@ -110,10 +123,7 @@ public class Entity {
     private void setPositImpl(long posit, Long move) {
         MoveEvent e = new MoveEvent(this, move, this.posit, posit);
         this.posit = posit;
-        new ArrayList<>(moveListeners).forEach(l -> l.accept(e));
-        // iterating on a copy instead of the actual list allows
-        // the actual list to be modified while iterating
-        // ??? maybe this takes unnecesary memory...
+        fireEvent(moveListeners, e);
     }
 
     /**
@@ -134,10 +144,7 @@ public class Entity {
     public void setState(long state) {
         StateEvent e = new StateEvent(this, this.state, state);
         this.state = state;
-        new ArrayList<>(stateListeners).forEach(l -> l.accept(e));
-        // iterating on a copy instead of the actual list allows
-        // the actual list to be modified while iterating
-        // ??? maybe this takes unnecesary memory...
+        fireEvent(stateListeners, e);
     }
 
     /**
@@ -210,6 +217,20 @@ public class Entity {
      */
     public void addMoveListener(Consumer<? super MoveEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
+        moveListeners.add(new RemovableListener<>(toAdd));
+    }
+        
+    /**
+     * Same as {@link #addMoveListener(java.util.function.Consumer)} but the
+     * added listener will be retained as long as it returns {@code true}.
+     * The listener will be removed the first time it returns {@code false}
+     * and the remove operation will take O(1) time.
+     * <p> NOTE: the listener will not be removed it throw an exception.
+     * @param toAdd the listener to be added
+     * @see MoveEvent
+     */
+    public void addMoveListenerRemovable(Predicate<? super MoveEvent> toAdd) {
+        Objects.requireNonNull(toAdd, "listener cannot be null");
         moveListeners.add(toAdd);
     }
     
@@ -218,7 +239,7 @@ public class Entity {
      * @param toRemove the listener to be removed
      */
     public void removeMoveListener(Consumer<? super MoveEvent> toRemove) {
-        moveListeners.remove(toRemove);
+        removeListener(moveListeners, toRemove);
     }
     
     /**
@@ -231,15 +252,29 @@ public class Entity {
      */
     public void addStateListener(Consumer<? super StateEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
+        stateListeners.add(new RemovableListener<>(toAdd));
+    }
+      
+    /**
+     * Same as {@link #addStateListener(java.util.function.Consumer)} but the
+     * added listener will be retained as long as it returns {@code true}.
+     * The listener will be removed the first time it returns {@code false}
+     * and the remove operation will take O(1) time.
+     * <p> NOTE: the listener will not be removed it throw an exception.
+     * @param toAdd the listener to be added
+     * @see StateEvent
+     */
+    public void addStateListenerRemovable(Predicate<? super StateEvent> toAdd) {
+        Objects.requireNonNull(toAdd, "listener cannot be null");
         stateListeners.add(toAdd);
     }
-        
+    
     /**
      * Removes the specified {@link StateEvent} listener.
      * @param toRemove the listener to be removed
      */
     public void removeStateListener(Consumer<StateEvent> toRemove) {
-        stateListeners.remove(toRemove);
+        removeListener(stateListeners, toRemove);
     }
     
     /**
@@ -258,15 +293,29 @@ public class Entity {
      */
     public void addPropertyListener(Consumer<? super PropertyEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
+        propertyListeners.add(new RemovableListener<>(toAdd));
+    }
+    
+    /**
+     * Same as {@link #addPropertyListener(java.util.function.Consumer)} but the
+     * added listener will be retained as long as it returns {@code true}.
+     * The listener will be removed the first time it returns {@code false}
+     * and the remove operation will take O(1) time.
+     * <p> NOTE: the listener will not be removed it throw an exception.
+     * @param toAdd the listener to be added
+     * @see PropertyEvent
+     */
+    public void addPropertyListenerRemovable(Predicate<? super PropertyEvent> toAdd) {
+        Objects.requireNonNull(toAdd, "listener cannot be null");
         propertyListeners.add(toAdd);
     }
-            
+    
     /**
      * Removes the specified {@link PropertyEvent} listener.
      * @param toRemove the listener to be removed
      */
     public void removePropertyListener(Consumer<? super PropertyEvent> toRemove) {
-        propertyListeners.remove(toRemove);
+        removeListener(propertyListeners, toRemove);
     }
        
     /**
@@ -279,17 +328,55 @@ public class Entity {
      */ 
     public void addEntityListener(Consumer<? super EntityEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
+        entityListeners.add(new RemovableListener<>(toAdd));
+    }
+             
+    /**
+     * Same as {@link #addEntityListener(java.util.function.Consumer)} but the
+     * added listener will be retained as long as it returns {@code true}.
+     * The listener will be removed the first time it returns {@code false}
+     * and the remove operation will take O(1) time.
+     * <p> NOTE: the listener will not be removed it throw an exception.
+     * @param toAdd the listener to be added
+     * @see EntityEvent
+     */ 
+    public void addEntityListenerRemovable(Predicate<? super EntityEvent> toAdd) {
+        Objects.requireNonNull(toAdd, "listener cannot be null");
         entityListeners.add(toAdd);
     }
-            
+    
     /**
      * Removes the specified {@link EntityEvent} listener.
      * @param toRemove the listener to be removed
      */
     public void removeEntityListener(Consumer<? super EntityEvent> toRemove) {
-        entityListeners.remove(toRemove);
+        removeListener(entityListeners, toRemove);
     }
     
+    static  <T> void removeListener(List<Predicate<? super T>> listenerList, Consumer<? super T> toRemove) {
+        if (listenerList.isEmpty()) return;
+        Iterator<Predicate<? super T>> it = listenerList.iterator();
+        while (it.hasNext()) {
+            Predicate<? super T> pred = it.next();
+            if (pred instanceof RemovableListener && ((RemovableListener) pred).action == toRemove) {
+                it.remove();
+                return;
+            }
+        }
+    }
+    
+    static <T> void fireEvent(List<Predicate<? super T>> listenerList, T event) {
+        if (listenerList.isEmpty()) return;
+        Iterator<Predicate<? super T>> it = listenerList.iterator();
+        while (it.hasNext()) {
+            Predicate<? super T> pred = it.next();
+            try {
+                if (!pred.test(event)) it.remove();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     
 // Property Management
     
@@ -392,9 +479,12 @@ public class Entity {
     }
     
     private void dispatchPropertyEvent(PropertyEvent e) {
-        new ArrayList<>(propertyListeners).stream().forEach((l) -> l.accept(e));
-        // iterating on a copy instead of the actual list allows
-        // the actual list to be modified while iterating
-        // ??? maybe this takes unnecesary memory...
+        fireEvent(propertyListeners, e);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString()+ " name: "+(name==null?"null":"\""+name+"\"")
+                +", posit: "+posit+", state: "+state;
     }
 }

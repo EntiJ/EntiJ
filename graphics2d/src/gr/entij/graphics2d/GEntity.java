@@ -82,10 +82,11 @@ public class GEntity implements Component {
             THREAD_POOL.execute(() -> proccessMoveEvent(e)));
         target.addStateListener((StateEvent e) ->
             THREAD_POOL.execute(() -> processStateEvent(e)));
-        target.addEntityListener((EntityEvent e) -> {
+        target.addEntityListenerRemovable((EntityEvent e) -> {
             THREAD_POOL.execute(() -> {
                 processEntityEvent(e);
             });
+            return e.type != Type.DESTROYED;
         });
     }
 

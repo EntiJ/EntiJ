@@ -5,6 +5,7 @@ import gr.entij.Entity;
 import gr.entij.Component;
 import gr.entij.event.EntityEvent;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class SoundComp implements Component {
     
@@ -29,12 +30,13 @@ public class SoundComp implements Component {
         }
     };
     
-    private final Consumer<EntityEvent> destroyListener = (EntityEvent e) -> {
+    private final Predicate<EntityEvent> destroyListener = (EntityEvent e) -> {
         if (e.type == EntityEvent.Type.DESTROYED) {
             e.source.removeMoveListener(moveListener);
             e.source.removeStateListener(stateListener);
-            e.source.removeEntityListener(this.destroyListener);
+            return false;
         }
+        return true;
     };
     
     public MoveSoundDeterminer getMoveSoundDeterminer() {
@@ -58,7 +60,7 @@ public class SoundComp implements Component {
     public void attach(Entity target) {
         target.addMoveListener(moveListener);
         target.addStateListener(stateListener);
-        target.addEntityListener(destroyListener);
+        target.addEntityListenerRemovable(destroyListener);
     }
 
 }

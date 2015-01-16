@@ -4,6 +4,7 @@ import gr.entij.event.*;
 import java.util.*;
 import java.util.function.Consumer;
 import static gr.entij.event.EntityEvent.Type;
+import java.util.function.Predicate;
 
 /**
  * Container for storing and organizing entities. Automatically indexes the
@@ -28,7 +29,7 @@ public class Terrain extends Entity {
     private final EntityMultiMap<Long> entitiesByState = new EntityMultiMap<>();
     private final EntityMultiMap<String> entitiesByName = new EntityMultiMap<>();
     
-    private final List<Consumer<? super EntityEvent>> addRemoveListeners = new LinkedList<>();
+    private final List<Predicate<? super EntityEvent>> addRemoveListeners = new LinkedList<>();
     
     private final Consumer<MoveEvent> terrainMoveListener = (MoveEvent e) -> {
         if (e.previousPosit != e.nextPosit) {
@@ -44,9 +45,12 @@ public class Terrain extends Entity {
         entitiesByState.addToKey(e.nextState, e.source);
     };
     
-    private final Consumer<EntityEvent> entityListener = (EntityEvent e) -> {
-        if (e.type == EntityEvent.Type.DESTROYED)
+    private final Predicate<EntityEvent> entityListener = (EntityEvent e) -> {
+        if (e.type == EntityEvent.Type.DESTROYED) {
             removeImpl(e.source, true);
+            return false;
+        }
+        return true;
     };
 
     /**
@@ -80,7 +84,7 @@ public class Terrain extends Entity {
     public void add(Entity toAdd) {
         toAdd.addMoveListener(terrainMoveListener);
         toAdd.addStateListener(terrainStateListener);
-        toAdd.addEntityListener(entityListener);
+        toAdd.addEntityListenerRemovable(entityListener);
         entitiesByName.addToKey(toAdd.getName(), toAdd);
         entitiesByPosit.addToKey(toAdd.getPosit(), toAdd);
         entitiesByState.addToKey(toAdd.getState(), toAdd);
@@ -100,7 +104,6 @@ public class Terrain extends Entity {
     private void removeImpl(Entity toRemove, boolean ofDestroy) {
         toRemove.removeMoveListener(terrainMoveListener);
         toRemove.removeStateListener(terrainStateListener);
-        toRemove.removeEntityListener(entityListener);
         entitiesByName.removeFromKey(toRemove.getName(), toRemove);
         entitiesByPosit.removeFromKey(toRemove.getPosit(), toRemove);
         entitiesByState.removeFromKey(toRemove.getState(), toRemove);
@@ -178,6 +181,22 @@ public class Terrain extends Entity {
      */
     public void addAddRemoveListener(Consumer<? super EntityEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
+        addRemoveListeners.add(new RemovableListener<>(toAdd));
+    }
+    
+    /**
+     * Same as {@link #addAddRemoveListener(java.util.function.Consumer)} but the
+     * added listener will be retained as long as it returns {@code true}.
+     * The listener will be removed the first time it returns {@code false}
+     * and the remove operation will take O(1) time.
+     * <p> NOTE: the listener will not be removed it throw an exception.
+     * @param toAdd
+     * @see #add(gr.entij.Entity)
+     * @see #remove(gr.entij.Entity) 
+     * @see EntityEvent
+     */
+    public void addAddRemoveListenerRemovable(Predicate<? super EntityEvent> toAdd) {
+        Objects.requireNonNull(toAdd, "listener cannot be null");
         addRemoveListeners.add(toAdd);
     }
     
@@ -186,11 +205,10 @@ public class Terrain extends Entity {
      * @param toRemove the listener to remove
      */
     public void removeAddRemoveListener(Consumer<? super EntityEvent> toRemove) {
-        addRemoveListeners.remove(toRemove);
+        removeListener(addRemoveListeners, toRemove);
     }
     
     private void onAddRemove(Entity ent, EntityEvent.Type type) {
-        EntityEvent destroyEvent = new EntityEvent(ent, type);
-        new ArrayList<>(addRemoveListeners).forEach(l -> l.accept(destroyEvent));
+        fireEvent(addRemoveListeners, new EntityEvent(ent, type));
     }
 }
