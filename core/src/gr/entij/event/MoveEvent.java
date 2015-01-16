@@ -37,5 +37,10 @@ public class MoveEvent extends Event {
         this.previousPosit = previousPosit;
         this.nextPosit = nextPosit;
     }
-    
+
+    @Override
+    public String toString() {
+        return super.toString()+", move: "+move+", previousPosit: "
+                +previousPosit+", nextPosit"+nextPosit;
+    }
 }

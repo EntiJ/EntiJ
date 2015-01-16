@@ -60,4 +60,9 @@ public class EntityEvent extends Event {
         super(source);
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return super.toString()+", type: "+type;
+    }
 }

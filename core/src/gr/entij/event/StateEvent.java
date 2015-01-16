@@ -28,4 +28,8 @@ public class StateEvent extends Event {
         this.nextState = nextState;
     }
 
+    @Override
+    public String toString() {
+        return super.toString()+", previousState: "+previousState+", nextState: "+nextState;
+    }
 }

@@ -29,4 +29,9 @@ public class PropertyEvent extends Event {
         super(source);
         this.oldValues = oldValues;
     }
+
+    @Override
+    public String toString() {
+        return super.toString()+ ", oldValues: "+oldValues;
+    }
 }

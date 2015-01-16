@@ -15,4 +15,9 @@ public class Event {
     public Event(Entity source) {
         this.source = source;
     }
+
+    @Override
+    public String toString() {
+        return super.toString()+" source: "+source;
+    }
 }
