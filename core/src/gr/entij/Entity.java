@@ -4,6 +4,7 @@ import gr.entij.event.*;
 import java.util.*;
 import java.util.function.Consumer;
 import static gr.entij.event.EntityEvent.Type;
+import gr.entij.function_records.HashFunctionRecord;
 import java.util.function.Predicate;
 
 /**
@@ -50,6 +51,7 @@ public class Entity {
     
     protected List<Entity> children = new ArrayList<>(0);
     private Map<String, Object> properties  = new HashMap<>();
+    private FunctionRecord functionRecord = new HashFunctionRecord();
     
     /**
      * Creates an {@code Entity} with {@code null} as name and 0 as posit
@@ -482,6 +484,22 @@ public class Entity {
         fireEvent(propertyListeners, e);
     }
 
+// function management
+
+    public FunctionRecord getFunctionRecord() {
+        return functionRecord;
+    }
+
+    public void setFunctionRecord(FunctionRecord functionRecord) {
+        this.functionRecord = functionRecord.child();
+    }
+    
+    public <T> T func(String func, Object... args)
+            throws NoSuchElementException, ClassCastException {
+        return functionRecord.apply(this, func, args);
+    }
+    
+    
     @Override
     public String toString() {
         return super.toString()+ " name: "+(name==null?"null":"\""+name+"\"")
