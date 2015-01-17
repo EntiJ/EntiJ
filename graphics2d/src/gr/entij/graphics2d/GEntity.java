@@ -52,6 +52,8 @@ public class GEntity implements Component {
     protected GTerrain parent; 
     private Entity target;
     
+    private boolean asyncEventProccesing = true;
+    
     private final List<EffectRecord> effects = new ArrayList<>();
     private final List<Consumer<GtMouseEnterEvent>> mouseEnterListeners = new LinkedList<>();
 //    private final BlockingQueue smoothMoveQueue = new LinkedBlockingQueue();
@@ -78,14 +80,26 @@ public class GEntity implements Component {
     @Override
     public void attach(Entity target) {
         this.target = target;
-        target.addMoveListener((MoveEvent e) ->
-            THREAD_POOL.execute(() -> proccessMoveEvent(e)));
-        target.addStateListener((StateEvent e) ->
-            THREAD_POOL.execute(() -> processStateEvent(e)));
+        target.addMoveListener((MoveEvent e) -> {
+            if (asyncEventProccesing) {
+                THREAD_POOL.execute(() -> proccessMoveEvent(e));
+            } else {
+                proccessMoveEvent(e);
+            }
+        });
+        target.addStateListener((StateEvent e) -> {
+            if (asyncEventProccesing) {
+                THREAD_POOL.execute(() -> processStateEvent(e));
+            } else {
+                processStateEvent(e);
+            }
+        });
         target.addEntityListenerRemovable((EntityEvent e) -> {
-            THREAD_POOL.execute(() -> {
+            if (asyncEventProccesing) {
+                THREAD_POOL.execute(() -> processEntityEvent(e));
+            } else {
                 processEntityEvent(e);
-            });
+            }
             return e.type != Type.DESTROYED;
         });
     }
@@ -254,6 +268,14 @@ public class GEntity implements Component {
         this.moveSmoth = moveSmoth;
     }
 
+    public boolean isAsyncEventProccesing() {
+        return asyncEventProccesing;
+    }
+
+    public void setAsyncEventProccesing(boolean asyncEventProccesing) {
+        this.asyncEventProccesing = asyncEventProccesing;
+    }
+    
     public Dimension getSize() {
         return getPositioning()
                 .logicalToRealSize(logicalWidth, logicalHeight,
