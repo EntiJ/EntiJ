@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  * Entities, also, provide the ability to monitor changes to any of the above properties
  * (except for the name which does not change) by adding appropriate listeners. <p>
  * Finally, an entity can have its own {@linkplain Logic logic} that defines its
- * behavior upon accepting different inputs (see {@link Entity#move(long)}).
+ * behavior upon accepting different inputs (see {@link Entity#move}).
  */
 public class Entity {
     // TODO take care of possible concurrency issues
@@ -122,7 +122,7 @@ public class Entity {
         setPositImpl(posit, null);
     }
     
-    private void setPositImpl(long posit, Long move) {
+    private void setPositImpl(long posit, Object move) {
         MoveEvent e = new MoveEvent(this, move, this.posit, posit);
         this.posit = posit;
         fireEvent(moveListeners, e);
@@ -191,12 +191,14 @@ public class Entity {
      * If there is no <em>logic</em> in this entity, the move is considered
      * valid and the next position is the same as the current one. <p>
      * Valid moves generate a {@link MoveEvent}.
-     * @param move
+     * @param move cannot be null
      * @return the new position or {@code null} if the move was found invalid
+     * @throws NullPointerException if {@code move} is {@code null}
      * @see #setLogic(gr.entij.Logic)
      * @see MoveEvent
      */
-    public Long move(long move) {
+    public Long move(Object move) throws NullPointerException {
+        Objects.requireNonNull(move, "move cannot be null");
         Long nextPosit = logic == null ? (Long) posit : logic.nextPosit(this, move);
         if (nextPosit != null) {
             setPositImpl(nextPosit, move);

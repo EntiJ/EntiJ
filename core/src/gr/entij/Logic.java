@@ -21,5 +21,5 @@ public interface Logic {
      * @return the next position of the entity or {@code null} if the move is
      * invalid
      */
-    Long nextPosit(Entity e, long move);
+    Long nextPosit(Entity e, Object move);
 }

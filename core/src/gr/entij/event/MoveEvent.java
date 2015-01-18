@@ -17,7 +17,7 @@ public class MoveEvent extends Event {
      * to the argument given to that call. If the source changed
      * position by a call to {@link Entity#setPosit} this value is {@code null}.
      */
-    public final Long move;
+    public final Object move;
 
     /**
      * The previous position of the source.
@@ -31,7 +31,7 @@ public class MoveEvent extends Event {
      */
     public final long nextPosit;
     
-    public MoveEvent(Entity source, Long move, long previousPosit, long nextPosit) {
+    public MoveEvent(Entity source, Object move, long previousPosit, long nextPosit) {
         super(source);
         this.move = move;
         this.previousPosit = previousPosit;
@@ -40,7 +40,7 @@ public class MoveEvent extends Event {
 
     @Override
     public String toString() {
-        return super.toString()+", move: "+move+", previousPosit: "
+        return super.toString()+", move: \""+move+"\", previousPosit: "
                 +previousPosit+", nextPosit"+nextPosit;
     }
 }
