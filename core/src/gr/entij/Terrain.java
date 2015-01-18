@@ -206,10 +206,10 @@ public class Terrain extends Entity {
      * @param toRemove the listener to remove
      */
     public void removeAddRemoveListener(Consumer<? super EntityEvent> toRemove) {
-        removeListener(addRemoveListeners, toRemove);
+        addRemoveListeners = removeListener(addRemoveListeners, toRemove);
     }
     
     private void onAddRemove(Entity ent, EntityEvent.Type type) {
-        fireEvent(addRemoveListeners, new EntityEvent(ent, type));
+        addRemoveListeners = fireEvent(addRemoveListeners, new EntityEvent(ent, type));
     }
 }

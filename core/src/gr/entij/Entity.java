@@ -115,7 +115,7 @@ public class Entity {
      */
     public void destroy() {
         EntityEvent destroyEvent = new EntityEvent(this, EntityEvent.Type.DESTROYED);
-        fireEvent(entityListeners, destroyEvent);
+        entityListeners = fireEvent(entityListeners, destroyEvent);
     }
     
     /**
@@ -150,7 +150,7 @@ public class Entity {
     private void setPositImpl(long posit, Object move) {
         MoveEvent e = new MoveEvent(this, move, this.posit, posit);
         this.posit = posit;
-        fireEvent(moveListeners, e);
+        moveListeners = fireEvent(moveListeners, e);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Entity {
     public void setState(long state) {
         StateEvent e = new StateEvent(this, this.state, state);
         this.state = state;
-        fireEvent(stateListeners, e);
+        stateListeners = fireEvent(stateListeners, e);
     }
 
     /**
@@ -269,7 +269,7 @@ public class Entity {
      * @param toRemove the listener to be removed
      */
     public void removeMoveListener(Consumer<? super MoveEvent> toRemove) {
-        removeListener(moveListeners, toRemove);
+        moveListeners = removeListener(moveListeners, toRemove);
     }
     
     /**
@@ -305,7 +305,7 @@ public class Entity {
      * @param toRemove the listener to be removed
      */
     public void removeStateListener(Consumer<StateEvent> toRemove) {
-        removeListener(stateListeners, toRemove);
+        stateListeners = removeListener(stateListeners, toRemove);
     }
     
     /**
@@ -347,7 +347,7 @@ public class Entity {
      * @param toRemove the listener to be removed
      */
     public void removePropertyListener(Consumer<? super PropertyEvent> toRemove) {
-        removeListener(propertyListeners, toRemove);
+        propertyListeners = removeListener(propertyListeners, toRemove);
     }
        
     /**
@@ -383,7 +383,7 @@ public class Entity {
      * @param toRemove the listener to be removed
      */
     public void removeEntityListener(Consumer<? super EntityEvent> toRemove) {
-        removeListener(entityListeners, toRemove);
+        entityListeners = removeListener(entityListeners, toRemove);
     }
     
     static  <T> Node<Predicate<? super T>> removeListener(Node<Predicate<? super T>> listenerList, Consumer<? super T> toRemove) {
@@ -418,8 +418,8 @@ public class Entity {
 //        }
     }
     
-    static <T> void fireEvent(Node<Predicate<? super T>> listenerList, T event) {
-        if (listenerList == null) return;
+    static <T> Node<Predicate<? super T>> fireEvent(Node<Predicate<? super T>> listenerList, T event) {
+        if (listenerList == null) return null;
         Node<Predicate<? super T>> current = listenerList;
         Node<Predicate<? super T>> previous = null;
         
@@ -449,15 +449,7 @@ public class Entity {
                 current = current.next;
             }
         }
-//        Iterator<Predicate<? super T>> it = listenerList.iterator();
-//        while (it.hasNext()) {
-//            Predicate<? super T> pred = it.next();
-//            try {
-//                if (!pred.test(event)) it.remove();
-//            } catch (RuntimeException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        return listenerList;
     }
     
 // Property Management
@@ -570,7 +562,7 @@ public class Entity {
     }
     
     private void dispatchPropertyEvent(PropertyEvent e) {
-        fireEvent(propertyListeners, e);
+        propertyListeners = fireEvent(propertyListeners, e);
     }
 
 // function management
