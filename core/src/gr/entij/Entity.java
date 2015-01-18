@@ -39,18 +39,43 @@ public class Entity {
         
     }
     
+    static class Node<T> {
+        T data;
+        Node<T> next;
+
+        public Node(T data, Node<T> next) {
+            this.data = data;
+            this.next = next;
+        }
+        
+        void destroy() {
+            data = null;
+            next = null;
+        }
+        
+        void ensureNotDestoyed() throws ConcurrentModificationException {
+            if (data == null) {
+                throw new ConcurrentModificationException();
+            }
+        }
+    }
+    
     private final String name;
     private long posit;
     private long state;
     
     private Logic logic;
-    private final List<Predicate<? super MoveEvent>> moveListeners = new LinkedList<>(); 
-    private final List<Predicate<? super StateEvent>> stateListeners = new LinkedList<>();
-    private final List<Predicate<? super PropertyEvent>> propertyListeners = new LinkedList<>();
-    private final List<Predicate<? super EntityEvent>> entityListeners = new LinkedList<>();
+    private Node<Predicate<? super MoveEvent>> moveListeners; 
+    private Node<Predicate<? super StateEvent>> stateListeners ;
+    private Node<Predicate<? super PropertyEvent>> propertyListeners;
+    private Node<Predicate<? super EntityEvent>> entityListeners;
     
-    protected List<Entity> children = new ArrayList<>(0);
-    private Map<String, Object> properties  = new HashMap<>();
+    /**
+     * List used to store the child-entities.
+     * The meaning of this list is up to the application.
+     */
+    public List<Entity> children = null;
+    private Map<String, Object> properties;
     private FunctionRecord functionRecord = new HashFunctionRecord();
     
     /**
@@ -175,14 +200,14 @@ public class Entity {
         this.logic = logic;
     }
 
-    /**
-     * Returns the list used to store the child-entities.
-     * The meaning of the returned list is up to the application.
-     * @return the actual list used to store th child-entities
-     */
-    public List<Entity> children() {
-        return children;
-    }
+//    /**
+//     * Returns the list used to store the child-entities.
+//     * The meaning of the returned list is up to the application.
+//     * @return the actual list used to store th child-entities
+//     */
+//    public List<Entity> children() {
+//        return children;
+//    }
     
     /**
      * Performs the given move, if valid. <br>
@@ -221,7 +246,7 @@ public class Entity {
      */
     public void addMoveListener(Consumer<? super MoveEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        moveListeners.add(new RemovableListener<>(toAdd));
+        moveListeners = new Node<>(new RemovableListener<>(toAdd), moveListeners);
     }
         
     /**
@@ -235,7 +260,8 @@ public class Entity {
      */
     public void addMoveListenerRemovable(Predicate<? super MoveEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        moveListeners.add(toAdd);
+//        moveListeners.add(toAdd);
+        moveListeners = new Node<>(toAdd, moveListeners);
     }
     
     /**
@@ -256,7 +282,7 @@ public class Entity {
      */
     public void addStateListener(Consumer<? super StateEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        stateListeners.add(new RemovableListener<>(toAdd));
+        stateListeners = new Node<>(new RemovableListener<>(toAdd), stateListeners);
     }
       
     /**
@@ -270,7 +296,8 @@ public class Entity {
      */
     public void addStateListenerRemovable(Predicate<? super StateEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        stateListeners.add(toAdd);
+//        stateListeners.add(toAdd);
+        stateListeners = new Node<>(toAdd, stateListeners);
     }
     
     /**
@@ -297,7 +324,7 @@ public class Entity {
      */
     public void addPropertyListener(Consumer<? super PropertyEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        propertyListeners.add(new RemovableListener<>(toAdd));
+        propertyListeners = new Node<>(new RemovableListener<>(toAdd), propertyListeners);
     }
     
     /**
@@ -311,7 +338,8 @@ public class Entity {
      */
     public void addPropertyListenerRemovable(Predicate<? super PropertyEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        propertyListeners.add(toAdd);
+//        propertyListeners.add(toAdd);
+        propertyListeners = new Node<>(toAdd, propertyListeners);
     }
     
     /**
@@ -332,7 +360,7 @@ public class Entity {
      */ 
     public void addEntityListener(Consumer<? super EntityEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        entityListeners.add(new RemovableListener<>(toAdd));
+        entityListeners = new Node<>(new RemovableListener<>(toAdd), entityListeners);
     }
              
     /**
@@ -346,7 +374,8 @@ public class Entity {
      */ 
     public void addEntityListenerRemovable(Predicate<? super EntityEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        entityListeners.add(toAdd);
+//        entityListeners.add(toAdd);
+        entityListeners = new Node<>(toAdd, entityListeners);
     }
     
     /**
@@ -357,29 +386,78 @@ public class Entity {
         removeListener(entityListeners, toRemove);
     }
     
-    static  <T> void removeListener(List<Predicate<? super T>> listenerList, Consumer<? super T> toRemove) {
-        if (listenerList.isEmpty()) return;
-        Iterator<Predicate<? super T>> it = listenerList.iterator();
-        while (it.hasNext()) {
-            Predicate<? super T> pred = it.next();
-            if (pred instanceof RemovableListener && ((RemovableListener) pred).action == toRemove) {
-                it.remove();
-                return;
+    static  <T> Node<Predicate<? super T>> removeListener(Node<Predicate<? super T>> listenerList, Consumer<? super T> toRemove) {
+        if (listenerList == null) return null;
+        Node<Predicate<? super T>> current = listenerList;
+        Node<Predicate<? super T>> previous = null;
+        
+        while (current != null) {
+            if (current.data instanceof RemovableListener && ((RemovableListener) current.data).action == toRemove) {
+                if (previous != null) {
+                    previous.next = current.next;
+                } else {
+                    listenerList = current.next;
+                }
+                current.destroy();
+                return listenerList;
             }
+            previous = current;
+            current = current.next;
         }
+        
+        return listenerList;
+        
+//        if (listenerList.isEmpty()) return;
+//        Iterator<Predicate<? super T>> it = listenerList.iterator();
+//        while (it.hasNext()) {
+//            Predicate<? super T> pred = it.next();
+//            if (pred instanceof RemovableListener && ((RemovableListener) pred).action == toRemove) {
+//                it.remove();
+//                return;
+//            }
+//        }
     }
     
-    static <T> void fireEvent(List<Predicate<? super T>> listenerList, T event) {
-        if (listenerList.isEmpty()) return;
-        Iterator<Predicate<? super T>> it = listenerList.iterator();
-        while (it.hasNext()) {
-            Predicate<? super T> pred = it.next();
+    static <T> void fireEvent(Node<Predicate<? super T>> listenerList, T event) {
+        if (listenerList == null) return;
+        Node<Predicate<? super T>> current = listenerList;
+        Node<Predicate<? super T>> previous = null;
+        
+        while (current != null) {
+            boolean removed = false;
             try {
-                if (!pred.test(event)) it.remove();
+                current.ensureNotDestoyed();
+                if (!current.data.test(event)) {
+                    if (previous != null) {
+                        previous.ensureNotDestoyed();
+                        previous.next = current.next;
+                        current.destroy();
+                        current = previous.next;
+                        removed = true;
+                    } else {
+                        listenerList = current.next;
+                        current.destroy();
+                        current = listenerList;
+                        removed = true;
+                    }
+                }
             } catch (RuntimeException e) {
                 e.printStackTrace();
             }
+            if (!removed) {
+                previous = current;
+                current = current.next;
+            }
         }
+//        Iterator<Predicate<? super T>> it = listenerList.iterator();
+//        while (it.hasNext()) {
+//            Predicate<? super T> pred = it.next();
+//            try {
+//                if (!pred.test(event)) it.remove();
+//            } catch (RuntimeException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
     
 // Property Management
@@ -397,6 +475,7 @@ public class Entity {
      */
     @SuppressWarnings("unchecked")
     public <T> T getProp(String propertyName) throws ClassCastException {
+        ensurePropertiesInitialized();
         return (T) properties.get(propertyName);
     }
     
@@ -409,6 +488,7 @@ public class Entity {
      * @see #addPropertyListener
      */
     public void setProp(String propertyName, Object propertyValue) {
+        ensurePropertiesInitialized();
         Map<String, Object> oldValues = Collections.singletonMap(
                 propertyName, properties.put(propertyName, propertyValue));
         dispatchPropertyEvent(new PropertyEvent(this, oldValues));
@@ -419,7 +499,7 @@ public class Entity {
      * @param propNameToRemove the name of the property to remove
      */
     public void removeProp(String propNameToRemove) {
-        if (properties.containsKey(propNameToRemove)) {
+        if (properties != null && properties.containsKey(propNameToRemove)) {
             Map<String, Object> oldValues = Collections.singletonMap(
                 propNameToRemove, properties.remove(propNameToRemove));
             dispatchPropertyEvent(new PropertyEvent(this, oldValues));
@@ -434,7 +514,7 @@ public class Entity {
      * @return {@code true} if the specified property is present
      */
     public boolean hasProp(String propertyName) {
-        return properties.containsKey(propertyName);
+        return properties != null && properties.containsKey(propertyName);
     }
     
     /**
@@ -445,11 +525,11 @@ public class Entity {
      * @see #addPropertyListener
      */
     public void setProps(Map<String, ? extends Object> props) {
-        if (propertyListeners.isEmpty()) {
+        if (propertyListeners == null) {
             properties = new HashMap<>(props); return;
         }
         
-        Map<String, Object> oldValues = properties;
+        Map<String, Object> oldValues = properties == null ? Collections.EMPTY_MAP : properties;
         properties = new HashMap<>(props);
         if (oldValues.isEmpty()) {
             oldValues.putAll(props);
@@ -470,7 +550,8 @@ public class Entity {
      * @see #addPropertyListener
      */
     public void putProps(Map<String, ? extends Object> props) {
-        if (propertyListeners.isEmpty()) {
+        ensurePropertiesInitialized();
+        if (propertyListeners == null) {
             properties.putAll(props); return; 
         }
 
@@ -480,6 +561,12 @@ public class Entity {
         });
         properties.putAll(props);
         dispatchPropertyEvent(new PropertyEvent(this, oldValues));
+    }
+    
+    private void ensurePropertiesInitialized() {
+        if (properties == null) {
+            properties = new HashMap<>(1);
+        }
     }
     
     private void dispatchPropertyEvent(PropertyEvent e) {

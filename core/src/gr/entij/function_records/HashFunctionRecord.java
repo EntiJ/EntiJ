@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 public class HashFunctionRecord implements FunctionRecord {
     
     private final FunctionRecord parent;
-    private final Map<String, BiFunction<Entity, Object[], Object>> funcs = new HashMap<>();
+    private Map<String, BiFunction<Entity, Object[], Object>> funcs;
 
     public HashFunctionRecord() {
         this(null);
@@ -34,7 +34,7 @@ public class HashFunctionRecord implements FunctionRecord {
 
     @Override
     public BiFunction<Entity, Object[], Object> lookUp(String func) {
-        BiFunction<Entity, Object[], Object> f = funcs.get(func);
+        BiFunction<Entity, Object[], Object> f = funcs == null ? null : funcs.get(func);
         return f != null || parent == null ? f : parent.lookUp(func);
     }
 
@@ -50,6 +50,9 @@ public class HashFunctionRecord implements FunctionRecord {
     public void setFunc(String funcName, BiFunction<Entity, Object[], Object> func)
             throws UnsupportedOperationException, NullPointerException {
         Objects.requireNonNull(func, "Function cannot be null");
+        if (funcs == null) {
+            funcs = new HashMap<>();
+        }
         funcs.put(funcName, func);
     }
     

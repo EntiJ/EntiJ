@@ -29,7 +29,7 @@ public class Terrain extends Entity {
     private final EntityMultiMap<Long> entitiesByState = new EntityMultiMap<>();
     private final EntityMultiMap<String> entitiesByName = new EntityMultiMap<>();
     
-    private final List<Predicate<? super EntityEvent>> addRemoveListeners = new LinkedList<>();
+    private Node<Predicate<? super EntityEvent>> addRemoveListeners;
     
     private final Consumer<MoveEvent> terrainMoveListener = (MoveEvent e) -> {
         if (e.previousPosit != e.nextPosit) {
@@ -181,7 +181,7 @@ public class Terrain extends Entity {
      */
     public void addAddRemoveListener(Consumer<? super EntityEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        addRemoveListeners.add(new RemovableListener<>(toAdd));
+        addRemoveListeners = new Node<>(new RemovableListener<>(toAdd), addRemoveListeners);
     }
     
     /**
@@ -197,7 +197,8 @@ public class Terrain extends Entity {
      */
     public void addAddRemoveListenerRemovable(Predicate<? super EntityEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        addRemoveListeners.add(toAdd);
+//        addRemoveListeners.add(toAdd);
+        addRemoveListeners = new Node<>(toAdd, addRemoveListeners);
     }
     
     /**
