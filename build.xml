@@ -1,7 +1,9 @@
 <project default="compile">
-
+    <tstamp/>
+    
     <property name="root.build" value="build"/>
     <property name="root.test.reports" value="testreports"/>
+    <property name="root.dist" value="dist"/>
 
 
 <!-- core module -->
@@ -11,6 +13,8 @@
     <property name="core.test.build" value="${root.build}/core/test" />
     <property name="core.test" value="core/test" />
     <property name="core.test.reports" value="${root.test.reports}/core"/>
+    <property name="core.jar.basename" value="entij-core"/>
+    <property name="core.jar.name" value="${core.jar.basename}-${DSTAMP}.jar"/>
     
     <path id="core.classpath.src"/>
     <path id="core.classpath.test">
@@ -48,6 +52,11 @@
         </junit>
     </target>
     
+    <target name="core-jar"  depends="core-compile">
+        <mkdir dir="${root.dist}"/>
+        <jar destfile="${root.dist}/${core.jar.name}" basedir="${core.src.build}"/>
+    </target>
+    
     
 <!-- graphics2d module -->
     
@@ -56,6 +65,8 @@
     <property name="graphics2d.test.build" value="${root.build}/graphics2d/test" />
     <property name="graphics2d.test" value="graphics2d/test" />
     <property name="graphics2d.test.reports" value="${root.test.reports}/graphics2d"/>
+    <property name="graphics2d.jar.basename" value="entij-graphics2d"/>
+    <property name="graphics2d.jar.name" value="${graphics2d.jar.basename}-${DSTAMP}.jar"/>
     
     <path id="graphics2d.classpath.src">
         <path refid="core.classpath.src"/>
@@ -95,6 +106,12 @@
         </junit>
     </target>
     
+    <target name="graphics2d-jar"  depends="graphics2d-compile">
+        <mkdir dir="${root.dist}"/>
+        <jar destfile="${root.dist}/${graphics2d.jar.name}"
+             basedir="${graphics2d.src.build}"/>
+    </target>
+    
     
 <!-- sound module -->
     
@@ -103,6 +120,8 @@
     <property name="sound.test.build" value="${root.build}/sound/test" />
     <property name="sound.test" value="sound/test" />
     <property name="sound.test.reports" value="${root.test.reports}/sound"/>
+    <property name="graphics2d.jar.basename" value="entij-graphics2d"/>
+    <property name="graphics2d.jar.name" value="${graphics2d.jar.basename}-${DSTAMP}.jar"/>
     
     <path id="sound.classpath.src">
         <path refid="core.classpath.src"/>
@@ -142,14 +161,33 @@
         </junit>
     </target>
 
+    <target name="sound-jar"  depends="sound-compile">
+        <mkdir dir="${root.dist}"/>
+        <jar destfile="${root.dist}/${sound.jar.name}"
+             basedir="${sound.src.build}"/>
+    </target>
+    
 
 <!-- all -->
+    <property name="root.jar.basename" value="entij-all"/>
+    <property name="root.jar.name" value="${root.jar.basename}-${DSTAMP}.jar"/>
 
     <target name="compile" depends="core-compile,graphics2d-compile,sound-compile"/>
     <target name="test" depends="core-test,graphics2d-test,sound-test"/>
+    <target name="jar" depends="core-jar,graphics2d-jar,sound-jar"/>
+    
+    <target name="jar-together" depends="compile">
+        <mkdir dir="${root.dist}"/>
+        <jar destfile="${root.dist}/${root.jar.name}">
+             <fileset dir="${core.src.build}"/>
+             <fileset dir="${graphics2d.src.build}"/>
+             <fileset dir="${sound.src.build}"/>
+        </jar>
+    </target>
     
      <target name="clean">
         <delete dir="${root.build}"/>
+        <delete dir="${root.dist}"/>
         <delete dir="${root.test.reports}"/>
     </target>
 </project>
