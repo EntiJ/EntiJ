@@ -61,7 +61,7 @@ class AdditiveRectange {
     }
     
     public boolean isValid() {
-        return minX < maxX && minY <= maxY;
+        return minX <= maxX && minY <= maxY;
     }
     
     public Rectangle getRectangle() {
