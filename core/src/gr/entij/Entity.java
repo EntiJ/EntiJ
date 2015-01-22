@@ -386,6 +386,17 @@ public class Entity {
         entityListeners = removeListener(entityListeners, toRemove);
     }
     
+    /**
+     * NOTE! always replace the reference to the given listenerList with the
+     * returned value!
+     * E.g. always call this method like that: {@code 
+     * listenerList = removeListener(listenerList, listenerToRemove);
+     * }
+     * @param <T> the of events these listeners handle
+     * @param listenerList the head of the listener list
+     * @param toRemove the listener to be removed
+     * @return the new head of the listener list
+     */
     static  <T> Node<Predicate<? super T>> removeListener(Node<Predicate<? super T>> listenerList, Consumer<? super T> toRemove) {
         if (listenerList == null) return null;
         Node<Predicate<? super T>> current = listenerList;
@@ -406,18 +417,19 @@ public class Entity {
         }
         
         return listenerList;
-        
-//        if (listenerList.isEmpty()) return;
-//        Iterator<Predicate<? super T>> it = listenerList.iterator();
-//        while (it.hasNext()) {
-//            Predicate<? super T> pred = it.next();
-//            if (pred instanceof RemovableListener && ((RemovableListener) pred).action == toRemove) {
-//                it.remove();
-//                return;
-//            }
-//        }
     }
     
+    /**
+     * NOTE! always replace the reference to the given listenerList with the
+     * returned value!
+     * E.g. always call this method like that: {@code 
+     * listenerList = fireEvent(listenerList, event);
+     * }
+     * @param <T> the type of event to be fired
+     * @param listenerList the head of the listeners to be notified
+     * @param event the event to be fired
+     * @return the new head of the notified listeners; 
+     */
     static <T> Node<Predicate<? super T>> fireEvent(Node<Predicate<? super T>> listenerList, T event) {
         if (listenerList == null) return null;
         Node<Predicate<? super T>> current = listenerList;
