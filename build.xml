@@ -1,0 +1,155 @@
+<project default="compile">
+
+    <property name="root.build" value="build"/>
+    <property name="root.test.reports" value="testreports"/>
+
+
+<!-- core module -->
+    
+    <property name="core.src.build" value="${root.build}/core/src" />
+    <property name="core.src" value="core/src" />
+    <property name="core.test.build" value="${root.build}/core/test" />
+    <property name="core.test" value="core/test" />
+    <property name="core.test.reports" value="${root.test.reports}/core"/>
+    
+    <path id="core.classpath.src"/>
+    <path id="core.classpath.test">
+        <pathelement location="${core.src.build}"/>
+        <pathelement location="lib_developement/junit-4.12.jar"/>
+        <pathelement location="lib_developement/hamcrest-core-1.3.jar"/>
+        <path refid="core.classpath.src"/>
+    </path>
+    
+    <target name="core-compile">
+        <mkdir dir="${core.src.build}"/>
+        <javac srcdir="${core.src}" destdir="${core.src.build}" classpathref="core.classpath.src" includeantruntime="false"/>
+    </target>
+    
+    <target name="core-compile-tests" depends="core-compile">
+        <mkdir dir="${core.test.build}"/>
+        <javac srcdir="${core.test}" destdir="${core.test.build}" classpathref="core.classpath.test" includeantruntime="false"/>
+    </target>
+    
+    <target name="core-test" depends="core-compile-tests">
+
+        <mkdir dir="${core.test.reports}"/>
+
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <path refid="core.classpath.test"/>
+                <pathelement location="${core.test.build}"/>
+            </classpath>
+            <formatter type="plain"/>
+            <batchtest fork="yes" todir="${core.test.reports}">
+                <fileset dir="${core.test}">
+                    <include name="**/*Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    
+    
+<!-- graphics2d module -->
+    
+    <property name="graphics2d.src.build" value="${root.build}/graphics2d/src" />
+    <property name="graphics2d.src" value="graphics2d/src" />
+    <property name="graphics2d.test.build" value="${root.build}/graphics2d/test" />
+    <property name="graphics2d.test" value="graphics2d/test" />
+    <property name="graphics2d.test.reports" value="${root.test.reports}/graphics2d"/>
+    
+    <path id="graphics2d.classpath.src">
+        <path refid="core.classpath.src"/>
+        <pathelement location="${core.src.build}"/>
+    </path>
+    <path id="graphics2d.classpath.test">
+        <path refid="core.classpath.test"/>
+        <pathelement location="${graphics2d.src.build}"/>
+        <path refid="graphics2d.classpath.src"/>
+    </path>
+    
+    <target name="graphics2d-compile" depends="core-compile">
+        <mkdir dir="${graphics2d.src.build}"/>
+        <javac srcdir="${graphics2d.src}" destdir="${graphics2d.src.build}" classpathref="graphics2d.classpath.src" includeantruntime="false"/>
+    </target>
+    
+    <target name="graphics2d-compile-tests" depends="graphics2d-compile">
+        <mkdir dir="${graphics2d.test.build}"/>
+        <javac srcdir="${graphics2d.test}" destdir="${graphics2d.test.build}" classpathref="graphics2d.classpath.test" includeantruntime="false"/>
+    </target>
+    
+    <target name="graphics2d-test" depends="graphics2d-compile-tests">
+
+        <mkdir dir="${graphics2d.test.reports}"/>
+
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <path refid="graphics2d.classpath.test"/>
+                <pathelement location="${graphics2d.test.build}"/>
+            </classpath>
+            <formatter type="plain"/>
+            <batchtest fork="yes" todir="${graphics2d.test.reports}">
+                <fileset dir="${graphics2d.test}">
+                    <include name="**/*Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    
+    
+<!-- sound module -->
+    
+    <property name="sound.src.build" value="${root.build}/sound/src" />
+    <property name="sound.src" value="sound/src" />
+    <property name="sound.test.build" value="${root.build}/sound/test" />
+    <property name="sound.test" value="sound/test" />
+    <property name="sound.test.reports" value="${root.test.reports}/sound"/>
+    
+    <path id="sound.classpath.src">
+        <path refid="core.classpath.src"/>
+        <pathelement location="${core.src.build}"/>
+    </path>
+    <path id="sound.classpath.test">
+        <path refid="core.classpath.test"/>
+        <pathelement location="${sound.src.build}"/>
+        <path refid="sound.classpath.src"/>
+    </path>
+    
+    <target name="sound-compile" depends="core-compile">
+        <mkdir dir="${sound.src.build}"/>
+        <javac srcdir="${sound.src}" destdir="${sound.src.build}" classpathref="sound.classpath.src" includeantruntime="false"/>
+    </target>
+    
+    <target name="sound-compile-tests" depends="sound-compile">
+        <mkdir dir="${sound.test.build}"/>
+        <javac srcdir="${sound.test}" destdir="${sound.test.build}" classpathref="sound.classpath.test" includeantruntime="false"/>
+    </target>
+    
+    <target name="sound-test" depends="sound-compile-tests">
+
+        <mkdir dir="${sound.test.reports}"/>
+
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <path refid="sound.classpath.test"/>
+                <pathelement location="${sound.test.build}"/>
+            </classpath>
+            <formatter type="plain"/>
+            <batchtest fork="yes" todir="${sound.test.reports}">
+                <fileset dir="${sound.test}">
+                    <include name="**/*Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+
+<!-- all -->
+
+    <target name="compile" depends="core-compile,graphics2d-compile,sound-compile"/>
+    <target name="test" depends="core-test,graphics2d-test,sound-test"/>
+    
+     <target name="clean">
+        <delete dir="${root.build}"/>
+        <delete dir="${root.test.reports}"/>
+    </target>
+</project>
