@@ -1,11 +1,17 @@
 
-package gr.entij;
+package gr.entij.util;
+
+import java.util.AbstractMap;
+import java.util.ConcurrentModificationException;
 
 
-public class Util {
+public class Bits {
     private static final long ONES = ~0L;
     
-    private Util() {}
+    private Bits() {}
+    
+        
+    
     
     public static boolean getBit(long data, int bit) {
         checkInLongBitRange("bit", bit);
