@@ -11,13 +11,15 @@ import gr.entij.Entity;
  */
 public class MoveEvent extends Event {
 
-    /**
+    /*
      * The move that caused the source to change position. If the source changed
      * position by a call to {@link Entity#move} this value is the equal to
      * to the argument given to that call. If the source changed
      * position by a call to {@link Entity#setPosit} this value is {@code null}.
      */
-    public final Object move;
+//    public final Object move;
+    
+//    public final boolean valid;
 
     /**
      * The previous position of the source.
@@ -31,9 +33,16 @@ public class MoveEvent extends Event {
      */
     public final long nextPosit;
     
-    public MoveEvent(Entity source, Object move, long previousPosit, long nextPosit) {
+    public MoveEvent(Entity source, Object move,
+            long previousPosit, long nextPosit) {
+        super(source, move);
+//        this.move = move;
+        this.previousPosit = previousPosit;
+        this.nextPosit = nextPosit;
+    }
+
+    public MoveEvent(Entity source, long previousPosit, long nextPosit) {
         super(source);
-        this.move = move;
         this.previousPosit = previousPosit;
         this.nextPosit = nextPosit;
     }

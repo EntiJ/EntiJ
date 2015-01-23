@@ -22,6 +22,12 @@ public class StateEvent extends Event {
      */
     public final long nextState;
     
+    public StateEvent(Entity source, Object move, long previousState, long nextState) {
+        super(source, move);
+        this.previousState = previousState;
+        this.nextState = nextState;
+    }
+    
     public StateEvent(Entity source, long previousState, long nextState) {
         super(source);
         this.previousState = previousState;

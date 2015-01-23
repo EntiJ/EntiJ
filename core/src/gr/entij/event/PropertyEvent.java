@@ -25,6 +25,11 @@ public class PropertyEvent extends Event {
      */
     public final Map<String, Object> oldValues;
     
+    public PropertyEvent(Entity source, Object move, Map<String, Object> oldValues) {
+        super(source, move);
+        this.oldValues = oldValues;
+    }
+    
     public PropertyEvent(Entity source, Map<String, Object> oldValues) {
         super(source);
         this.oldValues = oldValues;

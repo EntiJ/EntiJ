@@ -12,8 +12,15 @@ public class Event {
      */
     public final Entity source;
     
+    public final Object move;
+    
     public Event(Entity source) {
+        this(source, null);
+    }
+
+    public Event(Entity source, Object move) {
         this.source = source;
+        this.move = move;
     }
 
     @Override

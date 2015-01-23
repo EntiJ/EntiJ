@@ -56,11 +56,16 @@ public class EntityEvent extends Event {
      */
     public final Type type;
 
+    public EntityEvent(Entity source, Object move, Type type) {
+        super(source, move);
+        this.type = type;
+    }
+
     public EntityEvent(Entity source, Type type) {
         super(source);
         this.type = type;
     }
-
+    
     @Override
     public String toString() {
         return super.toString()+", type: "+type;
