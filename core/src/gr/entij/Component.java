@@ -1,5 +1,7 @@
 package gr.entij;
 
+import java.util.Objects;
+
 /**
  * Component that can be attached to an {@link Entity} to provide additional
  * characteristics. For example, a graphic component may provide a graphical
@@ -20,4 +22,16 @@ public interface Component {
      */
     void attach(Entity target);
 
+    /**
+     * Returns a new component that is the combination of this and the given one.
+     * The {@code attach} method of the returned component will first attach
+     * this component and then the given one.
+     * @param toBeCombined the component to be combined with this
+     * @return the combination of this component and the given one
+     * @throws NullPointerException if toBeCombined is null
+     */
+    default Component combine(Component toBeCombined) {
+        Objects.requireNonNull(toBeCombined, "toBeCombined can not be null");
+        return e -> {Component.this.attach(e); toBeCombined.attach(e);};
+    }
 }
