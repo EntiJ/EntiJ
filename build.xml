@@ -26,12 +26,14 @@
     
     <target name="core-compile">
         <mkdir dir="${core.src.build}"/>
-        <javac srcdir="${core.src}" destdir="${core.src.build}" classpathref="core.classpath.src" includeantruntime="false"/>
+        <javac srcdir="${core.src}" destdir="${core.src.build}"
+            classpathref="core.classpath.src" includeantruntime="false"/>
     </target>
     
     <target name="core-compile-tests" depends="core-compile">
         <mkdir dir="${core.test.build}"/>
-        <javac srcdir="${core.test}" destdir="${core.test.build}" classpathref="core.classpath.test" includeantruntime="false"/>
+        <javac srcdir="${core.test}" destdir="${core.test.build}"
+            classpathref="core.classpath.test" includeantruntime="false"/>
     </target>
     
     <target name="core-test" depends="core-compile-tests">
@@ -80,12 +82,14 @@
     
     <target name="graphics2d-compile" depends="core-compile">
         <mkdir dir="${graphics2d.src.build}"/>
-        <javac srcdir="${graphics2d.src}" destdir="${graphics2d.src.build}" classpathref="graphics2d.classpath.src" includeantruntime="false"/>
+        <javac srcdir="${graphics2d.src}" destdir="${graphics2d.src.build}"
+            classpathref="graphics2d.classpath.src" includeantruntime="false"/>
     </target>
     
     <target name="graphics2d-compile-tests" depends="graphics2d-compile">
         <mkdir dir="${graphics2d.test.build}"/>
-        <javac srcdir="${graphics2d.test}" destdir="${graphics2d.test.build}" classpathref="graphics2d.classpath.test" includeantruntime="false"/>
+        <javac srcdir="${graphics2d.test}" destdir="${graphics2d.test.build}"
+            classpathref="graphics2d.classpath.test" includeantruntime="false"/>
     </target>
     
     <target name="graphics2d-test" depends="graphics2d-compile-tests">
@@ -135,12 +139,14 @@
     
     <target name="sound-compile" depends="core-compile">
         <mkdir dir="${sound.src.build}"/>
-        <javac srcdir="${sound.src}" destdir="${sound.src.build}" classpathref="sound.classpath.src" includeantruntime="false"/>
+        <javac srcdir="${sound.src}" destdir="${sound.src.build}"
+            classpathref="sound.classpath.src" includeantruntime="false"/>
     </target>
     
     <target name="sound-compile-tests" depends="sound-compile">
         <mkdir dir="${sound.test.build}"/>
-        <javac srcdir="${sound.test}" destdir="${sound.test.build}" classpathref="sound.classpath.test" includeantruntime="false"/>
+        <javac srcdir="${sound.test}" destdir="${sound.test.build}"
+            classpathref="sound.classpath.test" includeantruntime="false"/>
     </target>
     
     <target name="sound-test" depends="sound-compile-tests">
