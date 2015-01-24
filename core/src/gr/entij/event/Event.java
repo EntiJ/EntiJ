@@ -12,6 +12,12 @@ public class Event {
      */
     public final Entity source;
     
+    /**
+     * The move that caused the action which generated the event.
+     * {@code null} if the event was not generated directly by a call to
+     * {@link Entity#move}.
+     * @see Entity#move
+     */
     public final Object move;
     
     public Event(Entity source) {

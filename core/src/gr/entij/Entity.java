@@ -169,7 +169,11 @@ public class Entity {
      * @see #addStateListener
      */
     public void setState(long state) {
-        StateEvent e = new StateEvent(this, this.state, state);
+        setStateImpl(state, null);
+    }
+    
+    private void setStateImpl(long state, Object move) {
+        StateEvent e = new StateEvent(this, move, this.state, state);
         this.state = state;
         stateListeners = fireEvent(stateListeners, e);
     }
@@ -208,30 +212,41 @@ public class Entity {
 //    public List<Entity> children() {
 //        return children;
 //    }
-    
+  
     /**
      * Performs the given move, if valid. <br>
      * The <em>logic</em> of this entity judges the validity of the given move
-     * and returns the next position, if the move is valid. <br>
-     * If there is no <em>logic</em> in this entity, the move is considered
-     * valid and the next position is the same as the current one. <p>
-     * Valid moves generate a {@link MoveEvent}.
-     * @param move cannot be null
-     * @return the new position or {@code null} if the move was found invalid
+     * and returns a {@linkplain MoveReaction reaction}, if the move is valid.
+     * Then, this entity performs the steps specified by that reaction.
+     * These steps may include changing state, position or property values. <p>
+     * If there is no <em>logic</em> in this entity, nothing happens.
+     * @param move the move to perform; cannot be null
+     * @return the reaction to {@code move} or {@code null} if the move was found invalid
      * @throws NullPointerException if {@code move} is {@code null}
      * @see #setLogic(gr.entij.Logic)
-     * @see MoveEvent
+     * @see MoveReaction
      */
-    public Long move(Object move) throws NullPointerException {
+    public MoveReaction move(Object move) throws NullPointerException {
         Objects.requireNonNull(move, "move cannot be null");
-        Long nextPosit = logic == null ? (Long) posit : logic.nextPosit(this, move);
-        if (nextPosit != null) {
-            setPositImpl(nextPosit, move);
+        MoveReaction reaction = logic == null ? null : logic.reaction(this, move);
+        if (reaction != null) {
+            applyMoveReaction(reaction, move);
         }
         
-        return nextPosit;
+        return reaction;
     }
     
+    private void applyMoveReaction(MoveReaction reaction, Object move) {
+        if (reaction.nextPosit != null) {
+            setPositImpl(reaction.nextPosit, move);
+        }
+        if (reaction.nextState != null) {
+            setStateImpl(reaction.nextState, move);
+        }
+        if (reaction.nextPropValues != null) {
+            putPropsImpl(reaction.nextPropValues, move);
+        }
+    }
     
 // Listener Management
     
@@ -495,7 +510,7 @@ public class Entity {
         ensurePropertiesInitialized();
         Map<String, Object> oldValues = Collections.singletonMap(
                 propertyName, properties.put(propertyName, propertyValue));
-        dispatchPropertyEvent(new PropertyEvent(this, oldValues));
+        dispatchPropertyEvent(oldValues, null);
     }
     
     /**
@@ -506,7 +521,7 @@ public class Entity {
         if (properties != null && properties.containsKey(propNameToRemove)) {
             Map<String, Object> oldValues = Collections.singletonMap(
                 propNameToRemove, properties.remove(propNameToRemove));
-            dispatchPropertyEvent(new PropertyEvent(this, oldValues));
+            dispatchPropertyEvent(oldValues, null);
         }
         
     }
@@ -543,7 +558,7 @@ public class Entity {
                     .filter(ent -> !oldValues.containsKey(ent.getKey()))
                     .forEach(ent -> oldValues.put(ent.getKey(), null));
         }
-        dispatchPropertyEvent(new PropertyEvent(this, oldValues));
+        dispatchPropertyEvent(oldValues, null);
     }
     
     /**
@@ -554,6 +569,10 @@ public class Entity {
      * @see #addPropertyListener
      */
     public void putProps(Map<String, ? extends Object> props) {
+        putPropsImpl(props, null);
+    }
+    
+    public void putPropsImpl(Map<String, ? extends Object> props, Object move) {
         ensurePropertiesInitialized();
         if (propertyListeners == null) {
             properties.putAll(props); return; 
@@ -564,7 +583,7 @@ public class Entity {
             ent.setValue(properties.get(ent.getKey()));
         });
         properties.putAll(props);
-        dispatchPropertyEvent(new PropertyEvent(this, oldValues));
+        dispatchPropertyEvent(oldValues, move);
     }
     
     private void ensurePropertiesInitialized() {
@@ -573,8 +592,9 @@ public class Entity {
         }
     }
     
-    private void dispatchPropertyEvent(PropertyEvent e) {
-        propertyListeners = fireEvent(propertyListeners, e);
+    private void dispatchPropertyEvent(Map<String, Object> oldValues, Object move) {
+        propertyListeners = fireEvent(propertyListeners,
+                new PropertyEvent(this, move, oldValues));
     }
 
 // function management

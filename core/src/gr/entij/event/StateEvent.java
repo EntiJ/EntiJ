@@ -4,7 +4,7 @@ import gr.entij.Entity;
 
 /**
  * A {@code StateEvent} is generated when an entity changes state
- * even,  if the new state equals the old state.
+ * even, if the new state equals the old state.
  * @see Entity#setState(long) 
  * @see Entity#addStateListener(java.util.function.Consumer) 
  */
