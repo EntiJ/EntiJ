@@ -64,7 +64,7 @@ public class Entity {
     private long posit;
     private long state;
     
-    private Logic logic;
+    private Node<Logic> logics;
     private Node<Predicate<? super MoveEvent>> moveListeners; 
     private Node<Predicate<? super StateEvent>> stateListeners ;
     private Node<Predicate<? super PropertyEvent>> propertyListeners;
@@ -178,30 +178,29 @@ public class Entity {
         stateListeners = fireEvent(stateListeners, e);
     }
 
-    /**
-     * Returns the {@link Logic} object of this entity.
-     * The {@code Logic} is responsible for approving a move, made by a call
-     * to {@link #move}, and if that move is accepted, determining the next
-     * position of the entity.
-     * @return the {@link Logic} object for this entity
-     * @see Logic
-     * @see #move
-     */
-    public Logic getLogic() {
-        return logic;
-    }
+//    /**
+//     * Returns the {@link Logic} object of this entity.
+//     * The {@code Logic} is responsible for approving a move, made by a call
+//     * to {@link #move}, and if that move is accepted, determining the next
+//     * position of the entity.
+//     * @return the {@link Logic} object for this entity
+//     * @see Logic
+//     * @see #move
+//     */
+//    public Logic getLogic() {
+//        return logics;
+//    }
 
     /**
-     * Sets the {@link Logic} component for this entity.
-     * {@code null} indicates that all moves should be accepted
-     * without changing the position.
+     * Adds this {@link Logic} component to this entity at the front.
      * @param logic the new {@link Logic} component for this entity
-     * @see #getLogic
+     * @throws NullPointerException if {@code logic} is {@code nul}
      * @see Logic
      * @see #move
      */
-    public void setLogic(Logic logic) {
-        this.logic = logic;
+    public void addLogic(Logic logic) throws NullPointerException {
+        Objects.requireNonNull(logic, "logic cannot be null");
+        this.logics = new Node<>(logic, this.logics);
     }
 
 //    /**
@@ -214,26 +213,32 @@ public class Entity {
 //    }
   
     /**
-     * Performs the given move, if valid. <br>
-     * The <em>logic</em> of this entity judges the validity of the given move
-     * and returns a {@linkplain MoveReaction reaction}, if the move is valid.
-     * Then, this entity performs the steps specified by that reaction.
-     * These steps may include changing state, position or property values. <p>
+     * Performs the given move. <br>
+     * Questions all {@linkplain Logic logics} of this entity for a
+     * {@linkplain MoveReaction reaction} to the given move and performs the
+     * steps of any non-null reaction. <br>
+     * If a logic consumes the move (see {@link MoveReaction#consume}) the
+     * remaining logics are not questioned. <p>
      * If there is no <em>logic</em> in this entity, nothing happens.
      * @param move the move to perform; cannot be null
      * @return the reaction to {@code move} or {@code null} if the move was found invalid
      * @throws NullPointerException if {@code move} is {@code null}
-     * @see #setLogic(gr.entij.Logic)
+     * @see #addLogic(gr.entij.Logic)
      * @see MoveReaction
      */
     public MoveReaction move(Object move) throws NullPointerException {
         Objects.requireNonNull(move, "move cannot be null");
-        MoveReaction reaction = logic == null ? null : logic.reaction(this, move);
-        if (reaction != null) {
-            applyMoveReaction(reaction, move);
+        for (Node<Logic> logic = logics; logic != null; logic = logic.next) {
+            MoveReaction reaction = logic.data.reaction(this, move);
+            if (reaction != null) {
+                applyMoveReaction(reaction, move);
+                if (reaction.consume || logic.next == null) {
+                    return reaction;
+                }
+            }
         }
         
-        return reaction;
+        return null;
     }
     
     private void applyMoveReaction(MoveReaction reaction, Object move) {

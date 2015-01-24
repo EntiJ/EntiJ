@@ -37,7 +37,8 @@ public class MoveReaction {
      * property should be removed.
      */
     public Map<String, Object> nextPropValues;
-//    public boolean consume = true;
+    
+    public boolean consume = true;
 
     /**
      * Creates an new {@code MoveReaction} that does not perform any action.
@@ -65,10 +66,10 @@ public class MoveReaction {
         return this;
     }
     
-//    public MoveReaction consume(boolean consume) {
-//        this.consume = consume;
-//        return this;
-//    }
+    public MoveReaction consume(boolean consume) {
+        this.consume = consume;
+        return this;
+    }
     
     /**
      * Sets the values that the given properties of the entity that performs the
