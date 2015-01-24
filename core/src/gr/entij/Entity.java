@@ -572,7 +572,7 @@ public class Entity {
         putPropsImpl(props, null);
     }
     
-    public void putPropsImpl(Map<String, ? extends Object> props, Object move) {
+    private void putPropsImpl(Map<String, ? extends Object> props, Object move) {
         ensurePropertiesInitialized();
         if (propertyListeners == null) {
             properties.putAll(props); return; 
