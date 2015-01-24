@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * Single linked based implementation of {@link Map} that does not allow
- * {@code null} keys and values.
+ * {@code null} keys.
  * This implementation is aimed for saving memory used by a large
  * number of very small maps.
  * @param <K> the type of the keys
@@ -35,7 +35,6 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
 
         @Override
         public V setValue(V value) {
-            checkValueNonNull(value);
             V old = val;
             val = value;
             return old;
@@ -108,7 +107,6 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
 
     @Override
     public boolean containsValue(Object value) {
-        checkValueNonNull(value);
         SLEntry<K, V> current = head;
         while (current != null) {
             if (current.val.equals(value)) {
@@ -256,10 +254,10 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
         }
     }
     
-    static void checkValueNonNull(Object value) {
-        if (value == null) {
-            throw new NullPointerException("This map does not allow null values");
-        }
-    }
+//    static void checkValueNonNull(Object value) {
+//        if (value == null) {
+//            throw new NullPointerException("This map does not allow null values");
+//        }
+//    }
     
 }
