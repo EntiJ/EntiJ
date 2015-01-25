@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 public class MoveReaction {
     
-    public static class AndThen {
+    static class AndThen {
         public final Entity target;
         public final Object move;
 
@@ -34,13 +34,13 @@ public class MoveReaction {
      * The next position of the target or {@code null} if the position should
      * not change.
      */
-    public Long nextPosit;
+    Long nextPosit;
     
     /**
      * The next state of the target or {@code null} if the state should
      * not change.
      */
-    public Long nextState;
+    Long nextState;
     
     /**
      * The next position of the target or {@code null} if none of the properties
@@ -49,14 +49,14 @@ public class MoveReaction {
      /* A {@code null} value on an entry indicates that the
      * property should be removed.
      */
-    public Map<String, Object> nextPropValues;
+    Map<String, Object> nextPropValues;
     
     /**
      * Moves to be performed after this move reaction is performed.
      */
-    public List<AndThen> andThenMoves;
+    List<AndThen> andThenMoves;
     
-    public boolean consume = true;
+    boolean consume = true;
 
     /**
      * Creates an new {@code MoveReaction} that does not perform any action.
