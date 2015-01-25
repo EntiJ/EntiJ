@@ -63,9 +63,10 @@ static Terrain setUp() {
         if (move == Move.PLAY && t.getState() == RUNNING
                 && sq.getState() == EMPTY) {
             long player = t.getProp("current player");
-            t.move(Move.CHANGE_PLAYER);
             // change the state of the square to current player
-            return new MoveReaction().state(player);
+            // and then signal to terrain to change the current player
+            return new MoveReaction().state(player)
+                    .andThen(t, Move.CHANGE_PLAYER);
         } else if (move == Move.CLEAR) {
             return new MoveReaction().state(EMPTY);
         }

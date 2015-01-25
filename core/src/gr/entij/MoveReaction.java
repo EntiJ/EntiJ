@@ -1,42 +1,60 @@
 package gr.entij;
 
 import gr.entij.util.SingleLinkedMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * Set of actions to be performed by an entity as reaction to a
- * {@linkplain Entity#move move}. <p>
+ * Set of actions to be performed by an target as reaction to a
+ {@linkplain Entity#move move}. <p>
  * These actions may include:
  * <ul>
- *   <li>Changing the entity's state</li>
- *   <li>Changing the entity's position</li>
- *   <li>Changing the entity's properties</li>
+ *   <li>Changing the target's state</li>
+ *   <li>Changing the target's position</li>
+ *   <li>Changing the target's properties</li>
  * </ul>
  * @see Logic
  * @see Entity#move
  */
 public class MoveReaction {
+    
+    public static class AndThen {
+        public final Entity target;
+        public final Object move;
+
+        public AndThen(Entity target, Object move) {
+            this.target = target;
+            this.move = move;
+        }
+    }
 
     /**
-     * The next position of the entity or {@code null} if the position should
+     * The next position of the target or {@code null} if the position should
      * not change.
      */
     public Long nextPosit;
     
     /**
-     * The next state of the entity or {@code null} if the state should
+     * The next state of the target or {@code null} if the state should
      * not change.
      */
     public Long nextState;
     
     /**
-     * The next position of the entity or {@code null} if none of the properties
+     * The next position of the target or {@code null} if none of the properties
      * should change.
      */
      /* A {@code null} value on an entry indicates that the
      * property should be removed.
      */
     public Map<String, Object> nextPropValues;
+    
+    /**
+     * Moves to be performed after this move reaction is performed.
+     */
+    public List<AndThen> andThenMoves;
     
     public boolean consume = true;
 
@@ -47,8 +65,8 @@ public class MoveReaction {
     }
     
     /**
-     * Sets the next position the entity that performs the move should take.
-     * @param posit the next position the entity that performs the move should take
+     * Sets the next position the target that performs the move should take.
+     * @param posit the next position the target that performs the move should take
      * @return this {@code MoveReaction}
      */
     public MoveReaction posit(Long posit) {
@@ -57,8 +75,8 @@ public class MoveReaction {
     }
     
     /**
-     * Sets the next state the entity that performs the move should take.
-     * @param state the next state the entity that performs the move should take
+     * Sets the next state the target that performs the move should take.
+     * @param state the next state the target that performs the move should take
      * @return this {@code MoveReaction}
      */
     public MoveReaction state(Long state) {
@@ -66,16 +84,40 @@ public class MoveReaction {
         return this;
     }
     
+    /**
+     * Appends the given move to the moves that are to be performed after this
+     * reaction has been processed. These moves moves will be performed in the
+     * order they are submitted.
+     * @param target the Entity to perform the move
+     * @param move the move to performed
+     * @return this {@code MoveReaction}
+     */
+    public MoveReaction andThen(Entity target, Object move) {
+        Objects.requireNonNull(target, "target can not be null");
+        Objects.requireNonNull(move, "move can not be null");
+        if (andThenMoves == null) {
+            andThenMoves = new LinkedList<>();
+        }
+        andThenMoves.add(new AndThen(target, move));
+        return this;
+    }
+    
+    /**
+     * If {@code true} (the default) the entity that performs the move will not
+     * query the remaining logics for reactions.
+     * @param consume whether to query other logics
+     * @return  this {@code MoveReaction}
+     */
     public MoveReaction consume(boolean consume) {
         this.consume = consume;
         return this;
     }
     
     /**
-     * Sets the values that the given properties of the entity that performs the
+     * Sets the values that the given properties of the target that performs the
      * move should take.
-     * @param props the values that the given properties of the entity that performs the
-     * move should take
+     * @param props the values that the given properties of the target that
+     * performs the move should take
      * @return this {@code MoveReaction}
      */
     public MoveReaction props(Map<String, Object> props) {
@@ -84,7 +126,7 @@ public class MoveReaction {
     }
     
     /**
-     * Sets the values that the specified property of the entity that performs the
+     * Sets the values that the specified property of the target that performs the
      * move should take.
      * @param name the name of the property that should change value
      * @param val the value the specified property should take

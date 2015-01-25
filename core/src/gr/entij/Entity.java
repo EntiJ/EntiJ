@@ -241,6 +241,11 @@ public class Entity {
         if (reaction.nextPropValues != null) {
             putPropsImpl(reaction.nextPropValues, move);
         }
+        if (reaction.andThenMoves != null) {
+            for (MoveReaction.AndThen andThen : reaction.andThenMoves) {
+                andThen.target.move(andThen.move);
+            }
+        }
     }
     
 // Listener Management
