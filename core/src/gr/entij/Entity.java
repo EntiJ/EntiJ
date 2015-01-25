@@ -24,6 +24,8 @@ public class Entity {
     // TODO take care of possible concurrency issues
     // Proposal: implement async messaging system
     
+    // TODO make logics removable
+    
     static class RemovableListener<T> implements Predicate<T> {
         final Consumer<T> action;
 
@@ -178,19 +180,6 @@ public class Entity {
         stateListeners = fireEvent(stateListeners, e);
     }
 
-//    /**
-//     * Returns the {@link Logic} object of this entity.
-//     * The {@code Logic} is responsible for approving a move, made by a call
-//     * to {@link #move}, and if that move is accepted, determining the next
-//     * position of the entity.
-//     * @return the {@link Logic} object for this entity
-//     * @see Logic
-//     * @see #move
-//     */
-//    public Logic getLogic() {
-//        return logics;
-//    }
-
     /**
      * Adds this {@link Logic} component to this entity at the front.
      * @param logic the new {@link Logic} component for this entity
@@ -221,7 +210,8 @@ public class Entity {
      * remaining logics are not questioned. <p>
      * If there is no <em>logic</em> in this entity, nothing happens.
      * @param move the move to perform; cannot be null
-     * @return the reaction to {@code move} or {@code null} if the move was found invalid
+     * @return the reaction that consumed the {@code move}
+     * or {@code null} if the move was no such reaction
      * @throws NullPointerException if {@code move} is {@code null}
      * @see #addLogic(gr.entij.Logic)
      * @see MoveReaction
@@ -232,7 +222,7 @@ public class Entity {
             MoveReaction reaction = logic.data.reaction(this, move);
             if (reaction != null) {
                 applyMoveReaction(reaction, move);
-                if (reaction.consume || logic.next == null) {
+                if (reaction.consume) {
                     return reaction;
                 }
             }
