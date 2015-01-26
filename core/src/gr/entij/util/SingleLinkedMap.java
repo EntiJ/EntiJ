@@ -6,7 +6,9 @@ import java.util.*;
  * Single linked based implementation of {@link Map} that does not allow
  * {@code null} keys.
  * This implementation is aimed for saving memory used by a large
- * number of very small maps.
+ * number of very small maps. <p>
+ * NOTE! The key and value of the entries of {@code SingleLinkedMaps} become
+ * {@code null} where they are removed. (e.g. when the key is removed)
  * @param <K> the type of the keys
  * @param <V> the type of the values
  */
@@ -109,7 +111,7 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
     public boolean containsValue(Object value) {
         SLEntry<K, V> current = head;
         while (current != null) {
-            if (current.val.equals(value)) {
+            if (Objects.equals(current.val, value)) {
                 return true;
             }
             current = current.next;
@@ -135,6 +137,7 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
 
     @Override
     public V remove(Object key) {
+        checkKeyNonNull(key);
         SLEntry<K, V> current = head;
         SLEntry<K, V> prev = null;
         while (current != null) {
@@ -223,7 +226,11 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
 
             @Override
             public boolean remove(Object o) {
-                return SingleLinkedMap.this.remove(((Entry<K, V>)o).getKey()) != null;
+                if (o instanceof Map.Entry) {
+                    Map.Entry entry = (Map.Entry) o;
+                    return SingleLinkedMap.this.remove(entry.getKey(), entry.getValue());
+                }
+                return false;
             }
 
             @Override
@@ -236,11 +243,11 @@ public class SingleLinkedMap<K, V> extends AbstractMap<K, V> {
     void removeImpl(SLEntry<K, V> previous) {
         SLEntry<K, V> toRemove;
         if (previous == null) {
-            assert head != null: "head is null";
+            //assert head != null: "head is null";
             toRemove = head;
             head = head.next;
         } else {
-            assert previous.next != null: "to be removed is null";
+            //assert previous.next != null: "to be removed is null";
             toRemove = previous.next;
             previous.next = toRemove.next;
         }
