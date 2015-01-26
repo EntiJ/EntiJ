@@ -15,7 +15,9 @@ static enum Move {PLAY, CLEAR, RESTART, CHANGE_PLAYER};
 
 // contains the positions of the 3 squares that made the victory
 static class WinObject {List<Long> winTriple; WinObject(List<Long> wt) {winTriple = wt;}};
-  
+
+// for each square, this lists contains the reamaining two squares that can form
+// a winning triple with it
 static final List<List<Pair<Long, Long>>> WIN_PAIRS = asList(
         asList(pair(1L, 2L), pair(3L, 6L), pair(4L, 8L)),
         asList(pair(0L, 2L), pair(4L, 7L)),
@@ -32,7 +34,8 @@ static Terrain setUp() {
     final Terrain t = new Terrain("Tic Tac Toe");
     t.addLogic((Entity e, Object move) -> {
         if (move == Move.CHANGE_PLAYER) {
-            if (t.getByState(EMPTY).isEmpty()) { // if there isn't any empty square
+            // if there isn't any empty square
+            if (!t.inState(EMPTY).hasAny(named("square"))) {
                 // the state of the Terrain should be DRAW
                 return new MoveReaction().state(DRAW);
             } else {
@@ -43,14 +46,14 @@ static Terrain setUp() {
             }
         } else if (move == Move.RESTART) {
             // clear all squares 
-            t.getByName("square").forEach((Entity sq) -> sq.move(Move.CLEAR));
+            t.named("square").forEach((Entity sq) -> sq.move(Move.CLEAR));
             // reset state and current player
             return new MoveReaction().state(RUNNING)
                     .prop("current player", X);
         } else if (move instanceof WinObject) {
             List<Long> winTriple = ((WinObject)move).winTriple;
             // the winner is the one who owns a winning square
-            long winner = t.getByPosit(winTriple.get(0)).any().get().getState();
+            long winner = t.at(winTriple.get(0)).any(named("square")).get().getState();
             return new MoveReaction().state(WIN)
                     .prop("winner", winner)
                     .prop("win triple", winTriple);
@@ -78,8 +81,10 @@ static Terrain setUp() {
         if (sqState == EMPTY) return;
         List<Pair<Long, Long>> wp = WIN_PAIRS.get((int)evt.source.getPosit());
         for (Pair<Long, Long> pair : wp) {
-            if (t.getByPosit(pair.val1).any().get().getState() == sqState
-                    && t.getByPosit(pair.val2).any().get().getState() == sqState) {
+            // if the other two squares of the win triple are in the same state
+            // (i.e. belong to the same player) we have a winner!
+            if (t.at(pair.val1).hasAny(named("square").and(inState(sqState)))
+                 && t.at(pair.val2).hasAny(named("square").and(inState(sqState)))) {
                 t.move(new WinObject(asList(pair.val1, pair.val2, evt.source.getPosit())));
                 return;
             }
