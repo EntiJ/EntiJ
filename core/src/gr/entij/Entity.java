@@ -67,7 +67,7 @@ public class Entity {
     private long state;
     
     private Node<Logic> logics;
-    private Node<Predicate<? super MoveEvent>> moveListeners; 
+    private Node<Predicate<? super PositEvent>> positListeners; 
     private Node<Predicate<? super StateEvent>> stateListeners ;
     private Node<Predicate<? super PropertyEvent>> propertyListeners;
     private Node<Predicate<? super EntityEvent>> entityListeners;
@@ -139,20 +139,20 @@ public class Entity {
 
     /**
      * Sets the position of this entity.
-     * Notifies all {@link MoveEvent} listeners that the position has changed
+     * Notifies all {@link PositEvent} listeners that the position has changed
      * (by a {@code null} move).
      * @param posit the new position
-     * @see MoveEvent
-     * @see #addMoveListener
+     * @see PositEvent
+     * @see #addPositListener
      */
     public void setPosit(long posit) {
         setPositImpl(posit, null);
     }
     
     private void setPositImpl(long posit, Object move) {
-        MoveEvent e = new MoveEvent(this, move, this.posit, posit);
+        PositEvent e = new PositEvent(this, move, this.posit, posit);
         this.posit = posit;
-        moveListeners = fireEvent(moveListeners, e);
+        positListeners = fireEvent(positListeners, e);
     }
 
     /**
@@ -251,40 +251,40 @@ public class Entity {
 // Listener Management
     
     /**
-     * Adds the given {@link MoveEvent} listener. <br>
+     * Adds the given {@link PositEvent} listener. <br>
      * The added listener will be notified each time the position changes,
      * even if the new position equals the old position. <p>
      * Some methods that may generate move events are: {@link #setPosit} and
      * {@link #move}.
      * @param toAdd the listener to be added
-     * @see MoveEvent
+     * @see PositEvent
      */
-    public void addMoveListener(Consumer<? super MoveEvent> toAdd) {
+    public void addPositListener(Consumer<? super PositEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
-        moveListeners = new Node<>(new RemovableListener<>(toAdd), moveListeners);
+        positListeners = new Node<>(new RemovableListener<>(toAdd), positListeners);
     }
         
     /**
-     * Same as {@link #addMoveListener(java.util.function.Consumer)} but the
+     * Same as {@link #addPositListener(java.util.function.Consumer)} but the
      * added listener will be retained as long as it returns {@code true}.
      * The listener will be removed the first time it returns {@code false}
      * and the remove operation will take O(1) time.
      * <p> NOTE: the listener will not be removed it throw an exception.
      * @param toAdd the listener to be added
-     * @see MoveEvent
+     * @see PositEvent
      */
-    public void addMoveListenerRemovable(Predicate<? super MoveEvent> toAdd) {
+    public void addPositListenerRemovable(Predicate<? super PositEvent> toAdd) {
         Objects.requireNonNull(toAdd, "listener cannot be null");
 //        moveListeners.add(toAdd);
-        moveListeners = new Node<>(toAdd, moveListeners);
+        positListeners = new Node<>(toAdd, positListeners);
     }
     
     /**
-     * Removes the specified {@link MoveEvent} listener.
+     * Removes the specified {@link PositEvent} listener.
      * @param toRemove the listener to be removed
      */
-    public void removeMoveListener(Consumer<? super MoveEvent> toRemove) {
-        moveListeners = removeListener(moveListeners, toRemove);
+    public void removePositListener(Consumer<? super PositEvent> toRemove) {
+        positListeners = removeListener(positListeners, toRemove);
     }
     
     /**

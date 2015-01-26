@@ -3,11 +3,11 @@ package gr.entij.event;
 import gr.entij.Entity;
 
 /**
- * A {@code MoveEvent} is generated when  an entity changes position, 
+ * A {@code PositEvent} is generated when  an entity changes position, 
  * even if the new position equals the old position.
  * @see Entity#addMoveListener(java.util.function.Consumer) 
  */
-public class MoveEvent extends Event {
+public class PositEvent extends Event {
 
     /**
      * The previous position of the source.
@@ -21,7 +21,7 @@ public class MoveEvent extends Event {
      */
     public final long nextPosit;
     
-    public MoveEvent(Entity source, Object move,
+    public PositEvent(Entity source, Object move,
             long previousPosit, long nextPosit) {
         super(source, move);
 //        this.move = move;
@@ -29,7 +29,7 @@ public class MoveEvent extends Event {
         this.nextPosit = nextPosit;
     }
 
-    public MoveEvent(Entity source, long previousPosit, long nextPosit) {
+    public PositEvent(Entity source, long previousPosit, long nextPosit) {
         super(source);
         this.previousPosit = previousPosit;
         this.nextPosit = nextPosit;

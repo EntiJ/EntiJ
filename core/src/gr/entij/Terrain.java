@@ -31,7 +31,7 @@ public class Terrain extends Entity {
     
     private Node<Predicate<? super EntityEvent>> addRemoveListeners;
     
-    private final Consumer<MoveEvent> terrainMoveListener = (MoveEvent e) -> {
+    private final Consumer<PositEvent> terrainPositListener = (PositEvent e) -> {
         if (e.previousPosit != e.nextPosit) {
             entitiesByPosit.removeFromKey(e.previousPosit, e.source);
         }
@@ -82,7 +82,7 @@ public class Terrain extends Entity {
      * @see #addAddRemoveListener(java.util.function.Consumer) 
      */
     public void add(Entity toAdd) {
-        toAdd.addMoveListener(terrainMoveListener);
+        toAdd.addPositListener(terrainPositListener);
         toAdd.addStateListener(terrainStateListener);
         toAdd.addEntityListenerRemovable(entityListener);
         entitiesByName.addToKey(toAdd.getName(), toAdd);
@@ -102,7 +102,7 @@ public class Terrain extends Entity {
     }
     
     private void removeImpl(Entity toRemove, boolean ofDestroy) {
-        toRemove.removeMoveListener(terrainMoveListener);
+        toRemove.removePositListener(terrainPositListener);
         toRemove.removeStateListener(terrainStateListener);
         entitiesByName.removeFromKey(toRemove.getName(), toRemove);
         entitiesByPosit.removeFromKey(toRemove.getPosit(), toRemove);

@@ -1,5 +1,5 @@
 package gr.entij.sound;
-import gr.entij.event.MoveEvent;
+import gr.entij.event.PositEvent;
 import gr.entij.event.StateEvent;
 import gr.entij.Entity;
 import gr.entij.Component;
@@ -9,12 +9,12 @@ import java.util.function.Predicate;
 
 public class SoundComp implements Component {
     
-    private MoveSoundDeterminer moveSoundDeterminer;
+    private PositSoundDeterminer moveSoundDeterminer;
     private StateSoundDeterminer stateSoundDeterminer;
     
-    private final Consumer<MoveEvent> moveListener = (MoveEvent e) -> {
+    private final Consumer<PositEvent> moveListener = (PositEvent e) -> {
         if (moveSoundDeterminer != null) {
-            String soundFile = moveSoundDeterminer.getSoundForMove(e);
+            String soundFile = moveSoundDeterminer.getSoundForPosit(e);
             if (soundFile != null) {
                 SoundUtil.playClip(soundFile);
             }
@@ -32,18 +32,18 @@ public class SoundComp implements Component {
     
     private final Predicate<EntityEvent> destroyListener = (EntityEvent e) -> {
         if (e.type == EntityEvent.Type.DESTROYED) {
-            e.source.removeMoveListener(moveListener);
+            e.source.removePositListener(moveListener);
             e.source.removeStateListener(stateListener);
             return false;
         }
         return true;
     };
     
-    public MoveSoundDeterminer getMoveSoundDeterminer() {
+    public PositSoundDeterminer getMoveSoundDeterminer() {
         return moveSoundDeterminer;
     }
 
-    public void setMoveSoundDeterminer(MoveSoundDeterminer moveSoundDeterminer) {
+    public void setMoveSoundDeterminer(PositSoundDeterminer moveSoundDeterminer) {
         this.moveSoundDeterminer = moveSoundDeterminer;
     }
 
@@ -58,7 +58,7 @@ public class SoundComp implements Component {
     
     @Override
     public void attach(Entity target) {
-        target.addMoveListener(moveListener);
+        target.addPositListener(moveListener);
         target.addStateListener(stateListener);
         target.addEntityListenerRemovable(destroyListener);
     }

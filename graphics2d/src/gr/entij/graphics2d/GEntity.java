@@ -1,6 +1,6 @@
 package gr.entij.graphics2d;
 
-import gr.entij.event.MoveEvent;
+import gr.entij.event.PositEvent;
 import gr.entij.event.EntityEvent;
 import gr.entij.event.StateEvent;
 import gr.entij.Entity;
@@ -80,7 +80,7 @@ public class GEntity implements Component {
     @Override
     public void attach(Entity target) {
         this.target = target;
-        target.addMoveListener((MoveEvent e) -> {
+        target.addPositListener((PositEvent e) -> {
             if (asyncEventProccesing) {
                 THREAD_POOL.execute(() -> proccessMoveEvent(e));
             } else {
@@ -282,7 +282,7 @@ public class GEntity implements Component {
                  positionType, parent.getWidth(), parent.getHeight());
     }
     
-    protected void proccessMoveEvent(MoveEvent e) {
+    protected void proccessMoveEvent(PositEvent e) {
         Point finalPosit = getPositioning().logicalToRealPosit(e.nextPosit, positionType, parent.getWidth(), parent.getHeight());
         if (moveSmoth) {
             smoothMove(finalPosit.x, finalPosit.y, 2, 4);

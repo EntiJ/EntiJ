@@ -5,7 +5,7 @@
  */
 package gr.entij.sound;
 
-import gr.entij.event.MoveEvent;
+import gr.entij.event.PositEvent;
 import gr.entij.event.StateEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,20 +34,20 @@ public class BaseSoundDeterminerTest {
     }
 
     /**
-     * Test of setSoundForMove and getSoundForMove methods, of class BaseSoundDeterminer.
+     * Test of setSoundForPosit and getSoundForPosit methods, of class BaseSoundDeterminer.
      */
     @Test
-    public void testSetGetSoundForMove() {
-        System.out.println("setSoundForMove");
+    public void testSetGetSoundForPosit() {
+        System.out.println("setSoundForPosit");
         BaseSoundDeterminer instance = new BaseSoundDeterminer();
-        instance.setSoundForMove(move1, sound1);
-        assertEquals(sound1, instance.getSoundForMove(new MoveEvent(null, move1, -1, -1)));
+        instance.setSoundForPosit(move1, sound1);
+        assertEquals(sound1, instance.getSoundForPosit(new PositEvent(null, null, -1, move1)));
         
-        instance.setSoundForMove(move2, sound2);
-        assertEquals(sound2, instance.getSoundForMove(new MoveEvent(null, move2, -1, -1)));
+        instance.setSoundForPosit(move2, sound2);
+        assertEquals(sound2, instance.getSoundForPosit(new PositEvent(null, null, -1, move2)));
         
-        instance.setSoundForMove(move1, sound2);
-        assertEquals(sound2, instance.getSoundForMove(new MoveEvent(null, move1, -1, -1)));
+        instance.setSoundForPosit(move1, sound2);
+        assertEquals(sound2, instance.getSoundForPosit(new PositEvent(null, null, -1, move1)));
     }
 
     /**

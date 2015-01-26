@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 public class SimpleComponent implements Component {
     
     private Consumer<? super StateEvent>[] stateListen;
-    private Consumer<? super MoveEvent>[] positListen;
+    private Consumer<? super PositEvent>[] positListen;
     private Consumer<? super PropertyEvent>[] propertyListen;
     private Consumer<? super EntityEvent>[] entityListen;
     
@@ -22,7 +22,7 @@ public class SimpleComponent implements Component {
         return this;
     }
     
-    public SimpleComponent positListen(Consumer<? super MoveEvent>... positListen) {
+    public SimpleComponent positListen(Consumer<? super PositEvent>... positListen) {
         this.positListen = positListen;
         return this;
     }
@@ -45,8 +45,8 @@ public class SimpleComponent implements Component {
             }
         }
         if (positListen != null) {
-            for (Consumer<? super MoveEvent> listener : positListen) {
-                target.addMoveListener(listener);
+            for (Consumer<? super PositEvent> listener : positListen) {
+                target.addPositListener(listener);
             }
         }
         if (propertyListen != null) {
