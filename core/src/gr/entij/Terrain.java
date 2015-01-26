@@ -120,7 +120,7 @@ public class Terrain extends Entity {
      * @param name the name of the entities to return
      * @return the entities with the given name
      */
-    public EntitySet getByName(String name) {
+    public EntitySet named(String name) {
         EntitySet result = entitiesByName.get(name);
         return result == null ? EMPTY_SET : result;
     }
@@ -135,7 +135,7 @@ public class Terrain extends Entity {
      * @param posit the position of the entities to return
      * @return the entities at the given position
      */
-    public EntitySet getByPosit(long posit) {
+    public EntitySet at(long posit) {
         EntitySet result = entitiesByPosit.get(posit);
         return result == null ? EMPTY_SET : result;
     }
@@ -150,7 +150,7 @@ public class Terrain extends Entity {
      * @param state the state of the entities to return
      * @return the entities in the given state
      */
-    public EntitySet getByState(long state) {
+    public EntitySet inState(long state) {
         EntitySet result = entitiesByState.get(state);
         return result == null ? EMPTY_SET : result;
     }
