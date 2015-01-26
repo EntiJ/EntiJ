@@ -25,13 +25,13 @@ public interface Component {
     /**
      * Returns a new component that is the combination of this and the given one.
      * The {@code attach} method of the returned component will first attach
-     * this component and then the given one.
+     * the given component and then this one.
      * @param toBeCombined the component to be combined with this
      * @return the combination of this component and the given one
      * @throws NullPointerException if toBeCombined is null
      */
     default Component combine(Component toBeCombined) {
         Objects.requireNonNull(toBeCombined, "toBeCombined can not be null");
-        return e -> {Component.this.attach(e); toBeCombined.attach(e);};
+        return e -> {toBeCombined.attach(e); Component.this.attach(e);};
     }
 }
