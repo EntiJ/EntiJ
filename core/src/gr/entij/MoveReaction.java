@@ -1,10 +1,12 @@
 package gr.entij;
 
 import gr.entij.util.SingleLinkedMap;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Set of actions to be performed by an target as reaction to a
@@ -21,11 +23,13 @@ import java.util.Objects;
 public class MoveReaction {
     
     static class AndThen {
-        public final Entity target;
-        public final Object move;
+        Entity target;
+        Stream<? extends Entity> targets;
+        Object move;
 
-        public AndThen(Entity target, Object move) {
+        public AndThen(Entity target, Stream<? extends Entity> targets, Object move) {
             this.target = target;
+            this.targets = targets;
             this.move = move;
         }
     }
@@ -95,11 +99,45 @@ public class MoveReaction {
     public MoveReaction andThen(Entity target, Object move) {
         Objects.requireNonNull(target, "target can not be null");
         Objects.requireNonNull(move, "move can not be null");
+        andThenImpl(target, null, move);
+        return this;
+    }
+    
+    /**
+     * Appends the given move to the moves that are to be performed after this
+     * reaction has been processed. These moves moves will be performed in the
+     * order they are submitted.
+     * @param targets the Entities to perform the move
+     * @param move the move to performed
+     * @return this {@code MoveReaction}
+     */
+    public MoveReaction andThen(Stream<? extends Entity> targets, Object move) {
+        Objects.requireNonNull(targets, "targets can not be null");
+        Objects.requireNonNull(move, "move can not be null");
+        andThenImpl(null, targets, move);
+        return this;
+    }
+    
+    /**
+     * Appends the given move to the moves that are to be performed after this
+     * reaction has been processed. These moves moves will be performed in the
+     * order they are submitted.
+     * @param targets the Entities to perform the move
+     * @param move the move to performed
+     * @return this {@code MoveReaction}
+     */
+    public MoveReaction andThen(Collection<? extends Entity> targets, Object move) {
+        Objects.requireNonNull(targets, "targets can not be null");
+        Objects.requireNonNull(move, "move can not be null");
+        andThenImpl(null, targets.stream(), move);
+        return this;
+    }
+    
+    private void andThenImpl(Entity target, Stream<? extends Entity> targets, Object move) {
         if (andThenMoves == null) {
             andThenMoves = new LinkedList<>();
         }
-        andThenMoves.add(new AndThen(target, move));
-        return this;
+        andThenMoves.add(new AndThen(target, targets, move));
     }
     
     /**

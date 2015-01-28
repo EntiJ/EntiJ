@@ -243,7 +243,13 @@ public class Entity {
         }
         if (reaction.andThenMoves != null) {
             for (MoveReaction.AndThen andThen : reaction.andThenMoves) {
-                andThen.target.move(andThen.move);
+                Object andThenMove = andThen.move;
+                if (andThen.target != null) {
+                    andThen.target.move(andThenMove);
+                } else {
+                    //assert andThen.targets != null;
+                    andThen.targets.forEach((Entity ent) -> ent.move(andThenMove));
+                }
             }
         }
     }
