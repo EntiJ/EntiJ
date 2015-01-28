@@ -18,12 +18,12 @@ public class Util {
     
 // TODO? Toolkit already has this...
     public static BufferedImage readImage(String path) throws IOException {
-        Toolkit.getDefaultToolkit().createImage(path);
-        final Enumeration<URL> systemResources = ClassLoader.getSystemResources(path);
-        while (systemResources.hasMoreElements()) {
-            System.out.println(systemResources.nextElement());
-        }
-        
+//        Toolkit.getDefaultToolkit().createImage(path);
+//        final Enumeration<URL> systemResources = ClassLoader.getSystemResources(path);
+//        while (systemResources.hasMoreElements()) {
+//            System.out.println(systemResources.nextElement());
+//        }
+//        
         return ImageIO.read(
                 ClassLoader.getSystemResource(path));
     }
