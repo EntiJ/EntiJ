@@ -239,7 +239,7 @@ public class Entity {
             setStateImpl(reaction.nextState, move);
         }
         if (reaction.nextPropValues != null) {
-            putPropsImpl(reaction.nextPropValues, move);
+            putAllImpl(reaction.nextPropValues, move);
         }
         if (reaction.andThenMoves != null) {
             for (MoveReaction.AndThen andThen : reaction.andThenMoves) {
@@ -336,9 +336,9 @@ public class Entity {
      * new value equals the old value. <p>
      * Some methods that may generate property events are:
      * <ul>
-     *   <li>with a single property changed: {@link #setProp}</li>
-     *   <li>with a multiple properties changed: {@link #setProps setProps(java.util.Map)}
-     *       and {@link #putProps putProps(java.util.Map)}.</li>
+     *   <li>with a single property changed: {@link #set}</li>
+     *   <li>with a multiple properties changed: {@link #setAll setAll(java.util.Map)}
+     *       and {@link #putAll putAll(java.util.Map)}.</li>
      * </ul>
      * @param toAdd the listener to be added
      * @see PropertyEvent
@@ -490,7 +490,7 @@ public class Entity {
     /**
      * Returns the value of the specified property or {@code null} if the
      * property is not present. <p>
-     * To check if the property is present use {@link #hasProp}.
+     * To check if the property is present use {@link #has}.
      * @param <T> the expected type of the value of the property
      * @param propertyName the name of the property
      * @return the value of the specified property or {@code null} if the
@@ -499,7 +499,7 @@ public class Entity {
      * is not of type assignable to {@code T}
      */
     @SuppressWarnings("unchecked")
-    public <T> T getProp(String propertyName) throws ClassCastException {
+    public <T> T get(String propertyName) throws ClassCastException {
         ensurePropertiesInitialized();
         return (T) properties.get(propertyName);
     }
@@ -512,7 +512,7 @@ public class Entity {
      * @param propertyValue the value to be set for the property
      * @see #addPropertyListener
      */
-    public void setProp(String propertyName, Object propertyValue) {
+    public void set(String propertyName, Object propertyValue) {
         ensurePropertiesInitialized();
         Map<String, Object> oldValues = Collections.singletonMap(
                 propertyName, properties.put(propertyName, propertyValue));
@@ -523,7 +523,7 @@ public class Entity {
      * Removes the specified property.
      * @param propNameToRemove the name of the property to remove
      */
-    public void removeProp(String propNameToRemove) {
+    public void remove(String propNameToRemove) {
         if (properties != null && properties.containsKey(propNameToRemove)) {
             Map<String, Object> oldValues = Collections.singletonMap(
                 propNameToRemove, properties.remove(propNameToRemove));
@@ -538,7 +538,7 @@ public class Entity {
      * @param propertyName the name of the property
      * @return {@code true} if the specified property is present
      */
-    public boolean hasProp(String propertyName) {
+    public boolean has(String propertyName) {
         return properties != null && properties.containsKey(propertyName);
     }
     
@@ -549,7 +549,7 @@ public class Entity {
      * @param props the new properties
      * @see #addPropertyListener
      */
-    public void setProps(Map<String, ? extends Object> props) {
+    public void setAll(Map<String, ? extends Object> props) {
         if (propertyListeners == null) {
             properties = new HashMap<>(props); return;
         }
@@ -574,11 +574,11 @@ public class Entity {
      * @param props the key-value pairs to be added
      * @see #addPropertyListener
      */
-    public void putProps(Map<String, ? extends Object> props) {
-        putPropsImpl(props, null);
+    public void putAll(Map<String, ? extends Object> props) {
+        putAllImpl(props, null);
     }
     
-    private void putPropsImpl(Map<String, ? extends Object> props, Object move) {
+    private void putAllImpl(Map<String, ? extends Object> props, Object move) {
         ensurePropertiesInitialized();
         if (propertyListeners == null) {
             properties.putAll(props); return; 
