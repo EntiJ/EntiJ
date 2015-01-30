@@ -613,7 +613,7 @@ public class Entity {
         this.functionRecord = functionRecord.child();
     }
     
-    public <T> T func(String func, Object... args)
+    public <T> T call(String func, Object... args)
             throws NoSuchElementException, ClassCastException {
         return functionRecord.apply(this, func, args);
     }
