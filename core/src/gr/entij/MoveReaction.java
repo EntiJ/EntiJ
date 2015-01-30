@@ -181,7 +181,7 @@ public class MoveReaction {
      * performs the move should take
      * @return this {@code MoveReaction}
      */
-    public MoveReaction props(Map<String, Object> props) {
+    public MoveReaction putAll(Map<String, Object> props) {
         nextPropValues = props;
         return this;
     }
@@ -193,7 +193,7 @@ public class MoveReaction {
      * @param val the value the specified property should take
      * @return this {@code MoveReaction}
      */
-    public MoveReaction prop(String name, Object val) {
+    public MoveReaction set(String name, Object val) {
         if (nextPropValues == null) {
             nextPropValues = new SingleLinkedMap<>(name, val);
         } else {
