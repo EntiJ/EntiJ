@@ -96,7 +96,7 @@ public class MoveReaction {
      * @param move the move to performed
      * @return this {@code MoveReaction}
      */
-    public MoveReaction andThen(Entity target, Object move) {
+    public MoveReaction andThenMove(Entity target, Object move) {
         Objects.requireNonNull(target, "target can not be null");
         Objects.requireNonNull(move, "move can not be null");
         andThenImpl(target, null, move);
@@ -111,7 +111,7 @@ public class MoveReaction {
      * @param move the move to performed
      * @return this {@code MoveReaction}
      */
-    public MoveReaction andThen(Stream<? extends Entity> targets, Object move) {
+    public MoveReaction andThenMove(Stream<? extends Entity> targets, Object move) {
         Objects.requireNonNull(targets, "targets can not be null");
         Objects.requireNonNull(move, "move can not be null");
         andThenImpl(null, targets, move);
@@ -126,7 +126,7 @@ public class MoveReaction {
      * @param move the move to performed
      * @return this {@code MoveReaction}
      */
-    public MoveReaction andThen(Collection<? extends Entity> targets, Object move) {
+    public MoveReaction andThenMove(Collection<? extends Entity> targets, Object move) {
         Objects.requireNonNull(targets, "targets can not be null");
         Objects.requireNonNull(move, "move can not be null");
         andThenImpl(null, targets.stream(), move);
