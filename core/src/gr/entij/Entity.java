@@ -241,14 +241,18 @@ public class Entity {
         if (reaction.nextPropValues != null) {
             putAllImpl(reaction.nextPropValues, move);
         }
-        if (reaction.andThenMoves != null) {
-            for (MoveReaction.AndThen andThen : reaction.andThenMoves) {
-                Object andThenMove = andThen.move;
-                if (andThen.target != null) {
-                    andThen.target.move(andThenMove);
+        if (reaction.andThen != null) {
+            for (MoveReaction.AndThen andThen : reaction.andThen) {
+                if (andThen.funcName != null) {
+                    call(andThen.funcName, andThen.args);
                 } else {
-                    //assert andThen.targets != null;
-                    andThen.targets.forEach((Entity ent) -> ent.move(andThenMove));
+                    Object andThenMove = andThen.move;
+                    if (andThen.target != null) {
+                        andThen.target.move(andThenMove);
+                    } else {
+                        //assert andThen.targets != null;
+                        andThen.targets.forEach((Entity ent) -> ent.move(andThenMove));
+                    }
                 }
             }
         }

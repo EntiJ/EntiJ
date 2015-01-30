@@ -26,11 +26,18 @@ public class MoveReaction {
         Entity target;
         Stream<? extends Entity> targets;
         Object move;
+        String funcName;
+        Object[] args;
 
         public AndThen(Entity target, Stream<? extends Entity> targets, Object move) {
             this.target = target;
             this.targets = targets;
             this.move = move;
+        }
+
+        public AndThen(String funcName, Object[] params) {
+            this.funcName = funcName;
+            this.args = params;
         }
     }
 
@@ -56,9 +63,9 @@ public class MoveReaction {
     Map<String, Object> nextPropValues;
     
     /**
-     * Moves to be performed after this move reaction is performed.
+     * Moves and calls to be performed after the move reaction is performed.
      */
-    List<AndThen> andThenMoves;
+    List<AndThen> andThen;
     
     boolean consume = true;
 
@@ -89,9 +96,25 @@ public class MoveReaction {
     }
     
     /**
-     * Appends the given move to the moves that are to be performed after this
-     * reaction has been processed. These moves moves will be performed in the
-     * order they are submitted.
+     * Appends the given function call to the actions to be performed after
+     * this reaction has been processed. These actions moves will be performed
+     * in the order where are submitted.
+     * @param funcName the name of the function to be called
+     * @param params the parameters of the call
+     * @return  this {@code MoveReaction}
+     */
+    public MoveReaction andThenCall(String funcName, Object... params) {
+        if (andThen == null) {
+            andThen = new LinkedList<>();
+        }
+        andThen.add(new AndThen(funcName, params));
+        return this;
+    }
+    
+    /**
+     * Appends the given move to the actions that are to be performed after this
+     * reaction has been processed. These actions will be performed in the
+     * order they where submitted.
      * @param target the Entity to perform the move
      * @param move the move to performed
      * @return this {@code MoveReaction}
@@ -104,9 +127,9 @@ public class MoveReaction {
     }
     
     /**
-     * Appends the given move to the moves that are to be performed after this
-     * reaction has been processed. These moves moves will be performed in the
-     * order they are submitted.
+     * Appends the given move to the actions that are to be performed after this
+     * reaction has been processed. These actions will be performed in the
+     * order they where submitted.
      * @param targets the Entities to perform the move
      * @param move the move to performed
      * @return this {@code MoveReaction}
@@ -119,9 +142,9 @@ public class MoveReaction {
     }
     
     /**
-     * Appends the given move to the moves that are to be performed after this
-     * reaction has been processed. These moves moves will be performed in the
-     * order they are submitted.
+     * Appends the given move to the actions that are to be performed after this
+     * reaction has been processed. These actions moves will be performed in the
+     * order they where submitted.
      * @param targets the Entities to perform the move
      * @param move the move to performed
      * @return this {@code MoveReaction}
@@ -134,10 +157,10 @@ public class MoveReaction {
     }
     
     private void andThenImpl(Entity target, Stream<? extends Entity> targets, Object move) {
-        if (andThenMoves == null) {
-            andThenMoves = new LinkedList<>();
+        if (andThen == null) {
+            andThen = new LinkedList<>();
         }
-        andThenMoves.add(new AndThen(target, targets, move));
+        andThen.add(new AndThen(target, targets, move));
     }
     
     /**
