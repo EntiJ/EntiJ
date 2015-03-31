@@ -8,4 +8,4 @@ The core ingredients of the system are the following:
 * Logic - Defines the behaviour of an entity.
 * Listeners - Triggered when something happens to an entity (such as state change).
 * Function - Function that can be attached to entities.
-* **Component** - Adds additional characteristics and functionality to an entity. It may include Properties, Logics, Listeners and Functions
+* **Component** - Adds characteristics and functionality to an entity. It may include Properties, Logics, Listeners and Functions
