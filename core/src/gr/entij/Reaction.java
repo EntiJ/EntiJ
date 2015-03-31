@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * Set of actions to be performed by an target as reaction to a
- {@linkplain Entity#move move}. <p>
+ * Set of actions to be performed by a target as reaction to a
+ {@link Entity#move input}. <p>
  * These actions may include:
  * <ul>
  *   <li>Changing the target's state</li>
@@ -20,19 +20,19 @@ import java.util.stream.Stream;
  * @see Logic
  * @see Entity#move
  */
-public class MoveReaction {
+public class Reaction {
     
     static class AndThen {
         Entity target;
         Stream<? extends Entity> targets;
-        Object move;
+        Object input;
         String funcName;
         Object[] args;
 
-        public AndThen(Entity target, Stream<? extends Entity> targets, Object move) {
+        public AndThen(Entity target, Stream<? extends Entity> targets, Object input) {
             this.target = target;
             this.targets = targets;
-            this.move = move;
+            this.input = input;
         }
 
         public AndThen(String funcName, Object[] params) {
@@ -63,7 +63,7 @@ public class MoveReaction {
     Map<String, Object> nextPropValues;
     
     /**
-     * Moves and calls to be performed after the move reaction is performed.
+     * Moves and calls to be performed after the input reaction is performed.
      */
     List<AndThen> andThen;
     
@@ -72,25 +72,25 @@ public class MoveReaction {
     /**
      * Creates an new {@code MoveReaction} that does not perform any action.
      */
-    public MoveReaction() {
+    public Reaction() {
     }
     
     /**
-     * Sets the next position the target that performs the move should take.
-     * @param posit the next position the target that performs the move should take
-     * @return this {@code MoveReaction}
+     * Sets the next position the target that performs the input should take.
+     * @param posit the next position the target that performs the input should take
+     * @return this {@code Reaction}
      */
-    public MoveReaction posit(Long posit) {
+    public Reaction posit(Long posit) {
         nextPosit = posit;
         return this;
     }
     
     /**
-     * Sets the next state the target that performs the move should take.
-     * @param state the next state the target that performs the move should take
-     * @return this {@code MoveReaction}
+     * Sets the next state the target that performs the input should take.
+     * @param state the next state the target that performs the input should take
+     * @return this {@code Reaction}
      */
-    public MoveReaction state(Long state) {
+    public Reaction state(Long state) {
         nextState = state;
         return this;
     }
@@ -101,9 +101,9 @@ public class MoveReaction {
      * in the order where are submitted.
      * @param funcName the name of the function to be called
      * @param params the parameters of the call
-     * @return  this {@code MoveReaction}
+     * @return  this {@code Reaction}
      */
-    public MoveReaction andThenCall(String funcName, Object... params) {
+    public Reaction andThenCall(String funcName, Object... params) {
         if (andThen == null) {
             andThen = new LinkedList<>();
         }
@@ -112,14 +112,14 @@ public class MoveReaction {
     }
     
     /**
-     * Appends the given move to the actions that are to be performed after this
-     * reaction has been processed. These actions will be performed in the
+     * Appends the given input to the actions that are to be performed after this
+ reaction has been processed. These actions will be performed in the
      * order they where submitted.
-     * @param target the Entity to perform the move
-     * @param move the move to performed
-     * @return this {@code MoveReaction}
+     * @param target the Entity to perform the input
+     * @param move the input to performed
+     * @return this {@code Reaction}
      */
-    public MoveReaction andThenMove(Entity target, Object move) {
+    public Reaction andThenMove(Entity target, Object move) {
         Objects.requireNonNull(target, "target can not be null");
         Objects.requireNonNull(move, "move can not be null");
         andThenImpl(target, null, move);
@@ -127,14 +127,14 @@ public class MoveReaction {
     }
     
     /**
-     * Appends the given move to the actions that are to be performed after this
-     * reaction has been processed. These actions will be performed in the
+     * Appends the given input to the actions that are to be performed after this
+ reaction has been processed. These actions will be performed in the
      * order they where submitted.
-     * @param targets the Entities to perform the move
-     * @param move the move to performed
-     * @return this {@code MoveReaction}
+     * @param targets the Entities to perform the input
+     * @param move the input to performed
+     * @return this {@code Reaction}
      */
-    public MoveReaction andThenMove(Stream<? extends Entity> targets, Object move) {
+    public Reaction andThenMove(Stream<? extends Entity> targets, Object move) {
         Objects.requireNonNull(targets, "targets can not be null");
         Objects.requireNonNull(move, "move can not be null");
         andThenImpl(null, targets, move);
@@ -142,14 +142,14 @@ public class MoveReaction {
     }
     
     /**
-     * Appends the given move to the actions that are to be performed after this
-     * reaction has been processed. These actions moves will be performed in the
+     * Appends the given input to the actions that are to be performed after this
+ reaction has been processed. These actions moves will be performed in the
      * order they where submitted.
-     * @param targets the Entities to perform the move
-     * @param move the move to performed
-     * @return this {@code MoveReaction}
+     * @param targets the Entities to perform the input
+     * @param move the input to performed
+     * @return this {@code Reaction}
      */
-    public MoveReaction andThenMove(Collection<? extends Entity> targets, Object move) {
+    public Reaction andThenMove(Collection<? extends Entity> targets, Object move) {
         Objects.requireNonNull(targets, "targets can not be null");
         Objects.requireNonNull(move, "move can not be null");
         andThenImpl(null, targets.stream(), move);
@@ -164,36 +164,36 @@ public class MoveReaction {
     }
     
     /**
-     * If {@code true} (the default) the entity that performs the move will not
-     * query the remaining logics for reactions.
+     * If {@code true} (the default) the entity that performs the input will not
+ query the remaining logics for reactions.
      * @param consume whether to query other logics
-     * @return  this {@code MoveReaction}
+     * @return  this {@code Reaction}
      */
-    public MoveReaction consume(boolean consume) {
+    public Reaction consume(boolean consume) {
         this.consume = consume;
         return this;
     }
     
     /**
      * Sets the values that the given properties of the target that performs the
-     * move should take.
+ input should take.
      * @param props the values that the given properties of the target that
-     * performs the move should take
-     * @return this {@code MoveReaction}
+ performs the input should take
+     * @return this {@code Reaction}
      */
-    public MoveReaction putAll(Map<String, Object> props) {
+    public Reaction putAll(Map<String, Object> props) {
         nextPropValues = props;
         return this;
     }
     
     /**
      * Sets the values that the specified property of the target that performs the
-     * move should take.
+ input should take.
      * @param name the name of the property that should change value
      * @param val the value the specified property should take
-     * @return this {@code MoveReaction}
+     * @return this {@code Reaction}
      */
-    public MoveReaction set(String name, Object val) {
+    public Reaction set(String name, Object val) {
         if (nextPropValues == null) {
             nextPropValues = new SingleLinkedMap<>(name, val);
         } else {

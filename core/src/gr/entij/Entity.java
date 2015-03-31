@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  * Entities, also, provide the ability to monitor changes to any of the above properties
  * (except for the name which does not change) by adding appropriate listeners. <p>
  * Finally, an entity can have its own {@linkplain Logic logic} that defines its
- * behavior upon accepting different inputs (see {@link Entity#move}).
+ * behavior upon the acceptance of different inputs (see {@link Entity#react}).
  */
 public class Entity {
     // TODO take care of possible concurrency issues
@@ -140,7 +140,7 @@ public class Entity {
     /**
      * Sets the position of this entity.
      * Notifies all {@link PositEvent} listeners that the position has changed
-     * (by a {@code null} move).
+     * (by a {@code null} react).
      * @param posit the new position
      * @see PositEvent
      * @see #addPositListener
@@ -183,9 +183,9 @@ public class Entity {
     /**
      * Adds this {@link Logic} component to this entity at the front.
      * @param logic the new {@link Logic} component for this entity
-     * @throws NullPointerException if {@code logic} is {@code nul}
+     * @throws NullPointerException if {@code logic} is {@code null}
      * @see Logic
-     * @see #move
+     * @see #react
      */
     public void addLogic(Logic logic) throws NullPointerException {
         Objects.requireNonNull(logic, "logic cannot be null");
@@ -202,26 +202,28 @@ public class Entity {
 //    }
   
     /**
-     * Performs the given move. <br>
-     * Questions all {@linkplain Logic logics} of this entity for a
-     * {@linkplain MoveReaction reaction} to the given move and performs the
+     * Accepts the given input and performs a reaction depending on
+     * attached {@linkplain Logic logics}. <br>
+     * It questions all {@linkplain Logic logics} of this entity for a
+     * {@link Reaction reaction} to the given input and performs the
      * steps of any non-null reaction. <br>
-     * If a logic consumes the move (see {@link MoveReaction#consume}) the
-     * remaining logics are not questioned. <p>
+     * If a logic consumes the input (see {@link MoveReaction#consume}) the
+     * remaining logics will not be questioned. <p>
      * If there is no <em>logic</em> in this entity, nothing happens.
-     * @param move the move to perform; cannot be null
-     * @return the reaction that consumed the {@code move}
-     * or {@code null} if the move was no such reaction
-     * @throws NullPointerException if {@code move} is {@code null}
+     * 
+     * @param input the input to react to; cannot be null
+     * @return the reaction that consumed the {@code input}
+     * or {@code null} if the react was no such reaction
+     * @throws NullPointerException if {@code input} is {@code null}
      * @see #addLogic(gr.entij.Logic)
-     * @see MoveReaction
+     * @see Reaction
      */
-    public MoveReaction move(Object move) throws NullPointerException {
-        Objects.requireNonNull(move, "move cannot be null");
+    public Reaction react(Object input) throws NullPointerException {
+        Objects.requireNonNull(input, "input cannot be null");
         for (Node<Logic> logic = logics; logic != null; logic = logic.next) {
-            MoveReaction reaction = logic.data.reaction(this, move);
+            Reaction reaction = logic.data.reaction(this, input);
             if (reaction != null) {
-                applyMoveReaction(reaction, move);
+                applyMoveReaction(reaction, input);
                 if (reaction.consume) {
                     return reaction;
                 }
@@ -231,7 +233,7 @@ public class Entity {
         return null;
     }
     
-    private void applyMoveReaction(MoveReaction reaction, Object move) {
+    private void applyMoveReaction(Reaction reaction, Object move) {
         if (reaction.nextPosit != null) {
             setPositImpl(reaction.nextPosit, move);
         }
@@ -242,16 +244,16 @@ public class Entity {
             putAllImpl(reaction.nextPropValues, move);
         }
         if (reaction.andThen != null) {
-            for (MoveReaction.AndThen andThen : reaction.andThen) {
+            for (Reaction.AndThen andThen : reaction.andThen) {
                 if (andThen.funcName != null) {
                     call(andThen.funcName, andThen.args);
                 } else {
-                    Object andThenMove = andThen.move;
+                    Object andThenMove = andThen.input;
                     if (andThen.target != null) {
-                        andThen.target.move(andThenMove);
+                        andThen.target.react(andThenMove);
                     } else {
                         //assert andThen.targets != null;
-                        andThen.targets.forEach((Entity ent) -> ent.move(andThenMove));
+                        andThen.targets.forEach((Entity ent) -> ent.react(andThenMove));
                     }
                 }
             }
@@ -264,8 +266,8 @@ public class Entity {
      * Adds the given {@link PositEvent} listener. <br>
      * The added listener will be notified each time the position changes,
      * even if the new position equals the old position. <p>
-     * Some methods that may generate move events are: {@link #setPosit} and
-     * {@link #move}.
+ Some methods that may generate react events are: {@link #setPosit} and
+     * {@link #react}.
      * @param toAdd the listener to be added
      * @see PositEvent
      */

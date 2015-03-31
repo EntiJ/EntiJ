@@ -7,16 +7,16 @@ import java.util.function.*;
 public class MapLogic implements Logic {
     static final class Entry {
         BiPredicate<Entity, Object> matcher;
-        BiFunction<Entity,  Object, MoveReaction> logic;
+        BiFunction<Entity,  Object, Reaction> logic;
         Entry next;
 
         public Entry(BiPredicate<Entity, Object> matcher,
-                BiFunction<Entity, Object, MoveReaction> logic) {
+                BiFunction<Entity, Object, Reaction> logic) {
             this.matcher = matcher;
             this.logic = logic;
         }
 
-        MoveReaction applyMatching(Entity e, Object m) {
+        Reaction applyMatching(Entity e, Object m) {
             Entry current = this;
             while (current != null) {
                 if (current.matcher == null || current.matcher.test(e, m)) {
@@ -39,7 +39,7 @@ public class MapLogic implements Logic {
     private Entry tail;
 
     @Override
-    public MoveReaction reaction(Entity e, Object move) {
+    public Reaction reaction(Entity e, Object move) {
         Entry mapping = map.get(move); // search for the exact (or equal) move
         if (mapping != null) {
             return mapping.applyMatching(e, move);
@@ -56,7 +56,7 @@ public class MapLogic implements Logic {
     }
 
     public MapLogic map(Object move, BiPredicate<Entity, Object> matcher,
-            BiFunction<Entity, Object, MoveReaction> logic) {
+            BiFunction<Entity, Object, Reaction> logic) {
         Objects.requireNonNull(move, "move cannot be null");
         Objects.requireNonNull(logic, "logic cannot be null");
         if (move.getClass() == Class.class)
@@ -71,17 +71,17 @@ public class MapLogic implements Logic {
         }
         return this;
     }
-    public MapLogic map(Object move, BiFunction<Entity, Object, MoveReaction> logic) {
+    public MapLogic map(Object move, BiFunction<Entity, Object, Reaction> logic) {
         return map(move, null, logic);
     }
 
     public <T> MapLogic mapClass(Class<T> clazz, BiPredicate<Entity, T> matcher,
-            BiFunction<Entity, T, MoveReaction> logic) {
+            BiFunction<Entity, T, Reaction> logic) {
         Objects.requireNonNull(clazz, "move cannot be null");
         Objects.requireNonNull(logic, "logic cannot be null");
         
         Entry entry = new Entry((BiPredicate<Entity, Object>)matcher,
-                (BiFunction<Entity, Object, MoveReaction>)logic);
+                (BiFunction<Entity, Object, Reaction>)logic);
         Entry mapping = map.get(clazz);
         if (mapping != null) {
             mapping.findTail().next = entry;
@@ -91,12 +91,12 @@ public class MapLogic implements Logic {
         return this;
     }
     
-    public <T> MapLogic mapClass(Class<T> clazz, BiFunction<Entity, T, MoveReaction> logic) {
+    public <T> MapLogic mapClass(Class<T> clazz, BiFunction<Entity, T, Reaction> logic) {
         return mapClass(clazz, null, logic);
     }
     
     public MapLogic match(BiPredicate<Entity, Object> matcher,
-            BiFunction<Entity, Object, MoveReaction> logic) {
+            BiFunction<Entity, Object, Reaction> logic) {
         Objects.requireNonNull(logic, "logic cannot be null");
         
         Entry entry = new Entry(matcher, logic);
