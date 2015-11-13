@@ -1,10 +1,13 @@
 package gr.entij;
+import gr.entij.AsyncEntryPool.AsyncEntry;
 import gr.entij.event.*;
 
 import java.util.*;
 import java.util.function.Consumer;
 import static gr.entij.event.EntityEvent.Type;
 import gr.entij.function_records.HashFunctionRecord;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -21,9 +24,6 @@ import java.util.function.Predicate;
  * behavior upon the acceptance of different inputs (see {@link Entity#react}).
  */
 public class Entity {
-    // TODO take care of possible concurrency issues
-    // Proposal: implement async messaging system
-    
     // TODO make logics removable
     
     static class RemovableListener<T> implements Predicate<T> {
@@ -71,6 +71,9 @@ public class Entity {
     private Node<Predicate<? super StateEvent>> stateListeners ;
     private Node<Predicate<? super PropertyEvent>> propertyListeners;
     private Node<Predicate<? super EntityEvent>> entityListeners;
+    
+    static AsyncEntryPool pool = new AsyncEntryPool();
+    AsyncEntry asyncEntry;
     
     /**
      * List used to store the child-entities.
@@ -231,6 +234,36 @@ public class Entity {
         }
         
         return null;
+    }
+    
+    public synchronized Future<Reaction> asyncReact(Object input) throws NullPointerException {
+        Objects.requireNonNull(input, "input cannot be null");
+        if (asyncEntry == null) {
+            asyncEntry = pool.get();
+        }
+        return asyncEntry.submitAction(this, input);
+    }
+    
+    public synchronized <T> Future<T>  asyncExecute(Function<? super Entity, T> code) throws NullPointerException {
+        Objects.requireNonNull(code, "input cannot be null");
+        if (asyncEntry == null) {
+            asyncEntry = pool.get();
+        }
+        return asyncEntry.sumbitCode(this, code);
+    }
+    
+    // package private because it is called by AsyncEntry2
+    synchronized void signalAsyncQueueEmpty() {
+        pool.putBack(asyncEntry);
+        asyncEntry = null;
+    }
+
+    public static void asyncShutdownNow() {
+        pool.shutdownNow();
+    }
+
+    public static void asyncShutdownLater() {
+        pool.shutdownLater();
     }
     
     private void applyMoveReaction(Reaction reaction, Object move) {
